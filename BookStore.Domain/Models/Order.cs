@@ -1,0 +1,62 @@
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookStore.Domain.Models
+{
+    public class Order
+    {
+        [Key]
+        public Guid OrderId { get; set; }
+        public Decimal Total { get; set; }
+        public string OrderStatus { get; set; }
+        [StringLength(256)]
+        [Unicode(false)]
+        public string? TransactionId { get; set; }
+
+        [StringLength(128)]
+        public string? Address { get; set; }
+
+        [StringLength(50)]
+        public string? Ward { get; set; }
+
+        [StringLength(30)]
+        public string? District { get; set; }
+        [StringLength(11)]
+        public string? PhoneNumber { get; set; }
+        public string? FullName { get; set; }
+
+        [StringLength(30)]
+        public string? City { get; set; }
+        [BindNever]
+        public ICollection<OrderItem>? OrderDetails { get; set; }
+        [StringLength(128)]
+        [Unicode(false)]
+        public string? TrackingNumber { get; set; }
+        public string? ShippingStatus { get; set; }
+        public string? ShippingCost { get; set; }
+        [StringLength(20)]
+        [Unicode(false)]
+        public string? PaymentStatus { get; set; }
+        public string? PaymentMethod { get; set; }
+        public DateTime? PaymentTime { get; set; }
+        //audit
+        public DateTime? CreatedTime { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? ModifiedTime { get; set; }
+        public string? ModifiedBy { get; set; }
+        //
+        public string UserId { get; set; }
+        [ForeignKey(nameof(UserId))]
+        [ValidateNever]
+        public ApplicationUser? User { get; set; }
+    }
+
+}
