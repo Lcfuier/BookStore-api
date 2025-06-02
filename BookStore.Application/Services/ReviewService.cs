@@ -1,4 +1,5 @@
-﻿using BookStore.Application.Interface;
+﻿using AutoMapper;
+using BookStore.Application.Interface;
 using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
@@ -19,17 +20,20 @@ namespace BookStore.Application.Services
     {
         private readonly IUnitOfWork _data;
         private readonly UserManager<ApplicationUser> _userManager;
-        public ReviewService(IUnitOfWork data, UserManager<ApplicationUser> userManager)
+        private readonly IMapper _mapper;
+        public ReviewService(IUnitOfWork data, UserManager<ApplicationUser> userManager,IMapper mapper)
         {
             _data = data;
             _userManager = userManager;
+            _mapper = mapper;
         }
-        public async Task<Result<PaginationResponse<Review>>> GetReviewsByBookIdAsync(int page, int size, Guid bookId)
+        public async Task<Result<PaginationResponse<ReviewRes>>> GetReviewsByBookIdAsync(int page, int size, Guid bookId)
         {
             IEnumerable<Review> data;
             QueryOptions<Review> options = new QueryOptions<Review>
             {
-                Where = c => c.BookId.Equals(bookId)
+                Where = c => c.BookId.Equals(bookId),
+                Includes="User"
             };
             if (page < 1)
             {
@@ -39,21 +43,22 @@ namespace BookStore.Application.Services
             {
                 options.PageNumber = page;
                 options.PageSize = size;
+                options.OrderBy = c => c.CreatedTime;
+                options.OrderByDirection = "desc";
                 data = await _data.Review.ListAllAsync(options);
             }
-
-            PaginationResponse<Review> paginationResponse = new PaginationResponse<Review>
+            
+            PaginationResponse<ReviewRes> paginationResponse = new PaginationResponse<ReviewRes>
             {
                 PageNumber = page,
                 PageSize = size,
                 // must be above the TotalRecords bc it has multiple Where clauses
-                Items = data,
-                TotalRecords = await _data.Author.CountAsync()
+                Items = _mapper.Map<List<ReviewRes>>(data),
+                TotalRecords = await _data.Review.CountAsync()
             };
-            return new Result<PaginationResponse<Review>>
+            return new Result<PaginationResponse<ReviewRes>>
             {
                 Data = paginationResponse,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -81,12 +86,11 @@ namespace BookStore.Application.Services
                 PageSize = size,
                 // must be above the TotalRecords bc it has multiple Where clauses
                 Items = data,
-                TotalRecords = await _data.Author.CountAsync()
+                TotalRecords = await _data.Review.CountAsync()
             };
             return new Result<PaginationResponse<Review>>
             {
                 Data = paginationResponse,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -97,7 +101,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -114,7 +118,7 @@ namespace BookStore.Application.Services
             _data.Review.Add(review);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Thêm đánh giá thành công!";
             result.Data = review;
             return result;
         }
@@ -125,7 +129,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -136,14 +140,14 @@ namespace BookStore.Application.Services
             if (review == null)
             {
                 result.Success = false;
-                result.Message = "Review not exist";
+                result.Message = "Không tìm thấy đánh giá";
                 result.Data = null;
                 return result;
             }
             if(!userRole.Equals(Roles.Admin)||!userRole.Equals(Roles.Librarian)|| !review.UserId.Equals(user.Id))
             {
                 result.Success = false;
-                result.Message = "Not allow to update review";
+                result.Message = "Lỗi khi thực hiện!";
                 result.Data = null;
                 return result;
             }
@@ -154,7 +158,7 @@ namespace BookStore.Application.Services
             _data.Review.Update(review);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Cập nhật đánh giá thành công!";
             result.Data = review;
             return result;
         }
@@ -165,7 +169,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -176,21 +180,24 @@ namespace BookStore.Application.Services
             if (review == null)
             {
                 result.Success = false;
-                result.Message = "Review not exist";
+                result.Message = "Đánh giá không tồn tại";
                 result.Data = null;
                 return result;
             }
-            if (!userRole.Equals(Roles.Admin) || !userRole.Equals(Roles.Librarian) || !review.UserId.Equals(user.Id))
+            if (userRole.ToLower()==Roles.User.ToLower())
             {
-                result.Success = false;
-                result.Message = "Not allow to remove review";
-                result.Data = null;
-                return result;
+                if (review.UserId != user.Id)
+                {
+                    result.Success = false;
+                    result.Message = "Lỗi khi thực hiện";
+                    result.Data = null;
+                    return result;
+                }
             }
             _data.Review.Remove(review);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Xóa đánh giá thành công!";
             return result;
         }
     }

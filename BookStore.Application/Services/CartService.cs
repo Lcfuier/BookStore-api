@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
@@ -39,7 +40,6 @@ namespace BookStore.Application.Services
             return new Result<IEnumerable<Cart>>
             {
                 Data = data,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -52,7 +52,7 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = null,
-                    Message = "User not exist"
+                    Message = "Người dùng không tồn tại!"
             };
             }
             Cart? cart = await _data.Cart.GetAsync(new QueryOptions<Cart>
@@ -72,7 +72,7 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = null,
-                    Message = "Cart is empty"
+                    Message = "Giỏ hàng trống"
                 };
             }
             var data= await _data.Cart.GetAsync(new QueryOptions<Cart>
@@ -80,12 +80,12 @@ namespace BookStore.Application.Services
                 Where= c=>c.UserId.Equals(user.Id)
             });
             
-            data.CartItems = (await _cartItemService.GetAllCartItemsByCartIdAsync(data.CartId)).ToList();
+            var item = (await _cartItemService.GetAllCartItemsByCartIdAsync(data.CartId)).ToList();
+            data.CartItems=item.OrderByDescending(c=>c.ModifiedTime).ToList();
             return new Result<GetCartRes>
             {
                 Success = true,
                 Data = _mapper.Map<GetCartRes>(data),
-                Message = "Successful"
             };
 
         }
@@ -101,7 +101,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại";
                 result.Data = null;
                 return result;
             }
@@ -112,14 +112,14 @@ namespace BookStore.Application.Services
             if (existBook is null)
             {
                 result.Success = false;
-                result.Message = "not found book";
+                result.Message = "Không tìm thấy sách!";
                 result.Data = null;
                 return result;
             }
             if (existBook.Inventory < req.Quantity)
             {
                 result.Success = false;
-                result.Message = "Insufficient stock";
+                result.Message = "Không đủ số lượng trong kho!";
                 result.Data = null;
                 return result;
             }
@@ -141,7 +141,8 @@ namespace BookStore.Application.Services
                     BookId = req.BookId,
                     Quantity = req.Quantity,
                     CartId = cart.CartId,
-                    CartItemID = new Guid()
+                    CartItemID = new Guid(),
+                    ModifiedTime= DateTime.UtcNow,  
                 };
                 _data.CartItem.Add(item);
             }
@@ -158,7 +159,8 @@ namespace BookStore.Application.Services
                         BookId = req.BookId,
                         Quantity = req.Quantity,
                         CartId = cart.CartId,
-                        CartItemID = new Guid()
+                        CartItemID = new Guid(),
+                        ModifiedTime = DateTime.UtcNow,
                     };
                     _data.CartItem.Add(item);
                 }
@@ -177,7 +179,7 @@ namespace BookStore.Application.Services
             }
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Add item successful";
+            result.Message = "Thêm vào giỏ hàng thánh công!";
             result.Data = null;
             return result;
         }
@@ -187,20 +189,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<CartItem>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
             }
             CartItem item = await _data.CartItem.GetAsync(new QueryOptions<CartItem>
             {
                 Where = c => c.CartItemID.Equals(ItemId)
-            }) ?? throw new Exception("Item not found.");
+            }) ?? throw new Exception("Không tìm thấy sách");
 
             _data.CartItem.Remove(item);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successful";
+            result.Message = "Xóa thành công";
             result.Data= null;
             return result;
         }
@@ -211,19 +215,20 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
             CartItem item = await _data.CartItem.GetAsync(new QueryOptions<CartItem>
             {
                 Where = c => c.CartItemID.Equals(ItemId)
-            }) ?? throw new Exception("Item not found.");
+            }) ?? throw new Exception("Không tìm thấy sách");
             item.Quantity += 1;
+            item.ModifiedTime= DateTime.UtcNow;
             _data.CartItem.Update(item);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successful";
+            result.Message = "Cập nhật thành công";
             result.Data = null;
             return result;
         }
@@ -234,14 +239,14 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
             CartItem item = await _data.CartItem.GetAsync(new QueryOptions<CartItem>
             {
                 Where = c => c.CartItemID.Equals(ItemId)
-            }) ?? throw new Exception("Item not found.");
+            }) ?? throw new Exception("Không tìm thấy sách!");
             if (item.Quantity == 1)
             {
                 await _cartItemService.RemoveCartItemAsync(item);
@@ -249,10 +254,11 @@ namespace BookStore.Application.Services
             else
             {
                 item.Quantity -= 1;
+                item.ModifiedTime = DateTime.UtcNow;
                 await _data.SaveAsync();
             }
             result.Success = true;
-            result.Message = "Successful";
+            result.Message = "Cập nhật thành công";
             result.Data = null;
             return result;
         }
@@ -263,7 +269,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Không tìm thấy người dùng!";
                 result.Data = 0;
                 return result;
             }

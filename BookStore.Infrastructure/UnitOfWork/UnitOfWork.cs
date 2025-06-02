@@ -25,7 +25,8 @@ namespace BookStore.Infrastructure.UnitOfWork
         public IOrderDetailRepository OrderDetail { get; private set; }
         public IOrderRepository Order { get; private set; }
         public IReviewRepository Review { get; private set; }
-
+        public IChatRepository Chat { get; private set; }
+        public IMessageRepository Message { get; private set; }
         public UnitOfWork(ApplicationDbContext context, IMapper _mapper)
         {
             _context = context;
@@ -40,6 +41,8 @@ namespace BookStore.Infrastructure.UnitOfWork
             OrderDetail= new OrderDetailRepository(_context);
             Order= new OrderRepository(_context);
             Review= new ReviewRepository(_context);
+            Chat= new ChatRepository(_context);
+            Message = new MessageRepository(_context);
         }
 
         public async Task SaveAsync()

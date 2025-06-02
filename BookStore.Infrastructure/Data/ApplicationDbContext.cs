@@ -47,15 +47,15 @@ namespace BookStore.Infrastructure.Data
                             j.HasIndex(new[] { "CategoryId" }, "BOOKCATEGORY_FK");
                         });
             });
-            SeedRoles(modelBuilder);
+            //SeedRoles(modelBuilder);
         }
-        private void SeedRoles(ModelBuilder modelBuilder)
+        /*private void SeedRoles(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<IdentityRole>().HasData(
                new IdentityRole() { Name = "Admin", ConcurrencyStamp = "1", NormalizedName = "Admin" },
                new IdentityRole() { Name = "Librarian", ConcurrencyStamp = "2", NormalizedName = "Librarian" },
                new IdentityRole() { Name = "User", ConcurrencyStamp = "3", NormalizedName = "User" }
                );
-        }
+        }*/
     }
 }

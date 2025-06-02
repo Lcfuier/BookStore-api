@@ -42,7 +42,8 @@ namespace BookStore.Application.Services
                 {
                     OrderId = request.OrderId,
                     UserName = userName,
-                    NickName = nickName
+                    NickName = nickName,
+                    SaveToken="true"
                 };
                 var json = JsonSerializer.Serialize(orderInfo);
                 var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
@@ -103,6 +104,7 @@ namespace BookStore.Application.Services
             var cardToken = "";
             var paymentStatus = "";
             var secureHash = "";
+            string saveToken = "";
             if (!string.IsNullOrEmpty(storeCard))
             {
                 secureHash = collection.FirstOrDefault(p => p.Key == "vnp_secure_hash").Value; 
@@ -117,6 +119,7 @@ namespace BookStore.Application.Services
                 txnRef = vnpay.GetResponseData("vnp_txn_ref");
                 cardToken = vnpay.GetResponseData("vnp_token");
                 paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
+
                 
                 var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(orderInfoRaw));
                 var orderInfoObj = JsonSerializer.Deserialize<OrderInfoVnpay>(decoded);
@@ -124,8 +127,9 @@ namespace BookStore.Application.Services
                 orderId = orderInfoObj.OrderId;
                 userName = orderInfoObj.UserName;
                 nickname = orderInfoObj.NickName;
+                saveToken = orderInfoObj.SaveToken;
                 var existing = await _userManager.FindByNameAsync(userName);
-                if (existing != null)
+                if (existing != null&&saveToken.Equals("true"))
                 {
                     _data.PaymentProfile.Add(new PaymentProfile
                     {
@@ -189,7 +193,8 @@ namespace BookStore.Application.Services
             {
                 OrderId = req.OrderId,
                 UserName = userName,
-                NickName = nickName
+                NickName = nickName,
+                SaveToken = "false"
             };
             var json = JsonSerializer.Serialize(orderInfo);
             var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));

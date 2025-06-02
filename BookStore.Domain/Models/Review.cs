@@ -23,6 +23,8 @@ namespace BookStore.Domain.Models
         [Range(1.0, 5.0, ErrorMessage = "Rating must be between 1.0 and 5.0")]
         public decimal Rating { get; set; }
         public string Comment { get; set; }
+        [NotMapped]
+        public string userfullName => this.User.FullName;
         //audit
         public DateTime? CreatedTime { get; set; }
         public string? CreatedBy { get; set; }

@@ -16,6 +16,12 @@ using System.IdentityModel.Tokens.Jwt;
 using Google.Authenticator;
 using Microsoft.IdentityModel.Tokens;
 using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
+using BookStore.Domain.Queries;
+using Google.Apis.Drive.v3.Data;
+using Microsoft.Extensions.Options;
+using AutoMapper;
+using System.Text.RegularExpressions;
 namespace BookStore.Application.Services
 {
     public class UserService : IUserService
@@ -23,19 +29,30 @@ namespace BookStore.Application.Services
         private readonly IUnitOfWork _data;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
-        public UserService(IUnitOfWork data, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        private readonly IMapper _mapper;
+        public UserService(IUnitOfWork data, UserManager<ApplicationUser> userManager, IConfiguration configuration, IMapper mapper)
         {
             _data = data;
             _userManager = userManager;
             _configuration = configuration;
+            _mapper=mapper;
         }
         public async Task<Result<ApplicationUser>> Register(RegisterReq register)
         {
             Result<ApplicationUser> result = new Result<ApplicationUser>();
+            if (string.IsNullOrWhiteSpace(register.Password) || IsUsernameValid(register.Password))
+            {
+                result.Success = false;
+                result.Message = "Tên đăng nhập hoặc mật khẩu không lệ!";
+                result.Data = null;
+                return result;
+            }
+            register.UserName = register.UserName.Trim();
+            register.Password = register.Password.Trim();
             if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(register.EmailAddress) || string.IsNullOrEmpty(register.LastName) || string.IsNullOrEmpty(register.FirstName) || string.IsNullOrEmpty(register.PhoneNumber) || string.IsNullOrEmpty(register.UserName))
             {
                 result.Success = false;
-                result.Message = "Lost Infomation";
+                result.Message = "Hãy nhập đủ thông tin!";
                 result.Data = null;
                 return result;
             }
@@ -43,7 +60,7 @@ namespace BookStore.Application.Services
             if (userInDb != null)
             {
                 result.Success = false;
-                result.Message = "Email is already existing";
+                result.Message = "Email đã tồn tại !";
                 result.Data = null;
                 return result;
             }
@@ -51,7 +68,7 @@ namespace BookStore.Application.Services
             if (userInDb != null)
             {
                 result.Success = false;
-                result.Message = "UserName is already existing";
+                result.Message = "UserName đã tồn tại !";
                 result.Data = null;
                 return result;
             }
@@ -61,8 +78,9 @@ namespace BookStore.Application.Services
                 var req = await _userManager.CreateAsync(user, register.Password);
                 if (req.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, Roles.User);
                     result.Success = true;
-                    result.Message = "Create User SuccessFul";
+                    result.Message = "Tạo tài khoản thành công!";
                     result.Data = user;
                 }
                 else
@@ -83,10 +101,19 @@ namespace BookStore.Application.Services
         public async Task<Result<LoginRes>> Login(LoginReq login)
         {
             Result<LoginRes> result = new Result<LoginRes>();
+            if (string.IsNullOrWhiteSpace(login.Password) || IsUsernameValid(login.Password))
+            {
+                result.Success = false;
+                result.Message = "Tên đăng nhập hoặc mật khẩu không lệ!";
+                result.Data = null;
+                return result;
+            }
+            login.UserName = login.UserName.Trim();
+            login.Password = login.Password.Trim();
             if (string.IsNullOrEmpty(login.Password) || string.IsNullOrEmpty(login.UserName))
             {
                 result.Success = false;
-                result.Message = "Required username and password";
+                result.Message = "Hãy nhập đủ tên người dùng và mật khẩu";
                 result.Data = null;
                 return result;
             }
@@ -94,15 +121,24 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "Username not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
+                return result;
+            }
+            if (user.LockoutEnd!=null && user.LockoutEnd > DateTimeOffset.UtcNow)
+            {
+                var remaining = user.LockoutEnd.Value - DateTimeOffset.UtcNow;
+                result.Success = false;
+                result.Message = $"Tài khoản đã bị khóa. Hết hạn sau {remaining.TotalMinutes:N0} phút.";
+                result.Data = null;
+                return result;
             }
             else if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
                 if (!user.EmailConfirmed)
                 {
                     result.Success = false;
-                    result.Message = "Email has not been confirmed";
+                    result.Message = "Email chưa được xác minh!";
                     result.Data = null;
                     return result;
                 }
@@ -131,6 +167,11 @@ namespace BookStore.Application.Services
                         new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                     };
                         var userRoles = await _userManager.GetRolesAsync(user);
+                        if (!userRoles.Any())
+                        {
+                            // Debug log hoặc breakpoint
+                            Console.WriteLine("User has no roles assigned.");
+                        }
                         foreach (var role in userRoles)
                         {
                             authClaim.Add(new Claim(ClaimTypes.Role, role));
@@ -142,7 +183,7 @@ namespace BookStore.Application.Services
                             AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                             RefreshToken = GenerateRefreshToken(),
                         };
-                        result.Message = "Login successful";
+                        result.Message = "Đăng nhập thành công!";
                         user.RefreshToken = result.Data.RefreshToken;
                         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
                         await _userManager.UpdateAsync(user);
@@ -155,7 +196,7 @@ namespace BookStore.Application.Services
             else
             {
                 result.Success = false;
-                result.Message = "Password is incorrect";
+                result.Message = "Mật khẩu không chính xác!";
                 result.Data = null;
             }
             return result;
@@ -170,14 +211,20 @@ namespace BookStore.Application.Services
                 if (req.Succeeded)
                 {
                     result.Success = true;
-                    result.Message = "Confirm Email Sucessful";
+                    result.Message = "Xác nhận email thành công!";
+                    result.Data = null;
+                }
+                else
+                {
+                    result.Success = false;
+                    result.Message = req.Errors.ToString();
                     result.Data = null;
                 }
             }
             else
             {
                 result.Success = false;
-                result.Message = "User name not exist";
+                result.Message = "Tên người dùng không tồn tại!";
                 result.Data = null;
             }
             return result;
@@ -189,7 +236,7 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "UserName not exist";
+                result.Message = "Tên người dùng không tồn tại!";
                 result.Data = null;
             }
             else
@@ -200,7 +247,7 @@ namespace BookStore.Application.Services
                     if (req.Succeeded)
                     {
                         result.Success = true;
-                        result.Message = "Update password successful";
+                        result.Message = "Cập nhật mật khẩu thành công!";
                         result.Data = null;
                         user.ModifiedTime= DateTime.UtcNow;
                         await _userManager.UpdateAsync(user);
@@ -215,7 +262,7 @@ namespace BookStore.Application.Services
                 else
                 {
                     result.Success = false;
-                    result.Message = "Current password is incorrect";
+                    result.Message = "Mật khẩu hiện tại không đúng !";
                     result.Data = null;
                 }
             }
@@ -228,12 +275,11 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "userName not exist";
+                result.Message = "Không tìm thấy người dùng!";
                 result.Data = null;
             }
             else
             {
-                user.Email = param.EmailAddress;
                 user.PhoneNumber = param.PhoneNumber;
                 user.LastName= param.LastName;
                 user.FirstName= param.FirstName;
@@ -243,7 +289,7 @@ namespace BookStore.Application.Services
                 if (req.Succeeded)
                 {
                     result.Success = true;
-                    result.Message = "Update information successful";
+                    result.Message = "Cập nhật thông tin thành công !";
                     result.Data = null;
                 }
                 else
@@ -261,7 +307,7 @@ namespace BookStore.Application.Services
             if (string.IsNullOrEmpty(param.UserName))
             {
                 result.Success = false;
-                result.Message = "Required userName";
+                result.Message = "Hãy nhập tên người dùng!";
                 result.Data = null;
                 return result;
             }
@@ -269,13 +315,13 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "user not exist";
+                result.Message = "Tên người dùng không tồn tại!"; ;
                 result.Data = null;
             }
             else
             {
                 result.Success = true;
-                result.Message = "Please check your email to reset your password";
+                result.Message = "Kiểm tra email của bạn để đặt lại mật khẩu!";
                 result.Data = user;
             }
             return result;
@@ -286,7 +332,7 @@ namespace BookStore.Application.Services
             if (string.IsNullOrEmpty(userName))
             {
                 result.Success = false;
-                result.Message = "Unknow user";
+                result.Message = "Tên người dùng không hợp lệ!";
                 result.Data = null;
                 return result;
             }
@@ -294,21 +340,20 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "userName not exist";
+                result.Message = "không tìm thấy người dùng!";
                 result.Data = null;
             }
 
-            var isValidOtp = await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPassword", Otp);
+            var isValidOtp = await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "veriyOtp", Otp);
             if (!isValidOtp)
             {
                 result.Success = false;
-                result.Message = "Invalid Code";
+                result.Message = "Mã xác nhật không hợp lệ!";
                 result.Data = null;
             }
             else
             {
                 result.Success = true;
-                result.Message = "successful, change your password";
                 result.Data = Otp;
             }
             return result;
@@ -320,7 +365,7 @@ namespace BookStore.Application.Services
             if (string.IsNullOrEmpty(param.UserName))
             {
                 result.Success = false;
-                result.Message = "Unknow user";
+                result.Message = "Tên người dùng không tồn tại!";
 
                 return result;
             }
@@ -329,15 +374,15 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Tên người dùng không tồn tại!";
 
             }
             else
             {
-                if (!await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "ResetPassword", param.Otp))
+                if (!await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "veriyOtp", param.Otp))
                 {
                     result.Success = false;
-                    result.Message = "Please verify OTP again";
+                    result.Message = "Hãy nhập lại OTP!";
 
                     return result;
                 }
@@ -348,7 +393,7 @@ namespace BookStore.Application.Services
                     if (req.Succeeded)
                     {
                         result.Success = true;
-                        result.Message = "Reset password successful";
+                        result.Message = "Đặt lại mật khẩu thành công!";
                     }
                     else
                     {
@@ -540,7 +585,7 @@ namespace BookStore.Application.Services
             if (string.IsNullOrEmpty(userName))
             {
                 result.Success = false;
-                result.Message = "Unknow user";
+                result.Message = "Hãy nhập tên người dùng!";
                 result.Data = null;
                 return result;
             }
@@ -548,11 +593,10 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
-            result.Message = "Successful";
             result.Success = true;
             result.Data = new GetInformationRes
             {
@@ -561,7 +605,69 @@ namespace BookStore.Application.Services
                 TwoFactorGoogleEnabled = user.TwoFactorGoogleEnabled,
                 FirstName=user.FirstName,
                 LastName=user.LastName,
+                userName=user.UserName
             };
+            return result;
+        }
+        public async Task<Result<ApplicationUser>> ChangeEmail(ChangeEmailReq param,string userName)
+        {
+            Result<ApplicationUser> result = new Result<ApplicationUser>();
+            result.Data = null;
+            if (string.IsNullOrEmpty(userName))
+            {
+                result.Success = false;
+                result.Message = "Tên người dùng không hợp lệ !";
+
+                return result;
+            }
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user is null)
+            {
+                result.Success = false;
+                result.Message = "Người dùng không tồn tại !";
+
+            }
+            var checkExistUser = await _userManager.FindByEmailAsync(param.Email);
+            if (checkExistUser is not null)
+            {
+                result.Success = false;
+                result.Message = "Email mới đã được sử dụng !";
+
+            }
+            else
+            {
+                if (!await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, "veriyOtp", param.Otp))
+                {
+                    result.Success = false;
+                    result.Message = "Hãy xác nhận lại Otp";
+
+                    return result;
+                }
+                try
+                {
+                    user.Email = param.Email;
+                    user.NormalizedEmail = param.Email;
+                    var req = await _userManager.UpdateAsync(user);
+                    if (req.Succeeded)
+                    {
+                        result.Success = true;
+                        result.Message = "Đổi email thành công";
+                    }
+                    else
+                    {
+                        result.Success = false;
+                        result.Message = req.ToString();
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    result.Success = false;
+                    result.Message = ex.Message.ToString();
+                }
+            }
             return result;
         }
         private JwtSecurityToken GetToken(List<Claim> authClaims)
@@ -597,7 +703,8 @@ namespace BookStore.Application.Services
                 ValidIssuer = _configuration["Jwt:Issuer"],
                 ValidAudience = _configuration["Jwt:Audience"],
                 IssuerSigningKey = key,
-                ValidateLifetime = false // Ignore expiration
+                ValidateLifetime = false, // Ignore expiration
+                RoleClaimType = ClaimTypes.Role
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken securityToken);
@@ -618,7 +725,7 @@ namespace BookStore.Application.Services
             if (!handler.CanReadToken(req.AccessToken))
             {
                 result.Success = false;
-                result.Message = "Invalid token";
+                result.Message = "Token không hợp lệ!";
                 result.Data = null;
                 return result;
             }
@@ -626,7 +733,7 @@ namespace BookStore.Application.Services
             if (token.ValidTo > DateTime.UtcNow)
             {
                 result.Success = true;
-                result.Message = "token is not expired";
+                result.Message = "Token chưa hết hạn";
                 result.Data = new LoginRes()
                 {
                     AccessToken = req.AccessToken,
@@ -638,14 +745,14 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Tên người dùng không tồn tại!";
                 result.Data = null;
             }
 
             if (user == null || user.RefreshToken != req.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 result.Success = false;
-                result.Message = "Invalid refresh token";
+                result.Message = "Refresh token không hợp lệ!";
                 result.Data = null;
                 return result;
             }
@@ -671,5 +778,191 @@ namespace BookStore.Application.Services
             result.Success = true;
             return result;
         }
+        public async Task<Result<ApplicationUser>> ChangeEmail(string userName)
+        {
+            Result<ApplicationUser> result = new Result<ApplicationUser>();
+            if (string.IsNullOrEmpty(userName))
+            {
+                result.Success = false;
+                result.Message = "Tên người dùng không hợp lệ!";
+                result.Data = null;
+                return result;
+            }
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user is null)
+            {
+                result.Success = false;
+                result.Message = "Người dùng không tồn tại!";
+                result.Data = null;
+            }
+            else
+            {
+                result.Success = true;
+                result.Message = "Kiếm tra email để đổi email mới !";
+                result.Data = user;
+            }
+            return result;
+        }
+        public async Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term)
+        {
+            IEnumerable<ApplicationUser> data;
+            QueryOptions<ApplicationUser> options = new QueryOptions<ApplicationUser>
+            {
+                Where= c=>c.UserName != "admin"
+            };
+            if (term != null)
+            {
+                options.Where = mi => mi.UserName.ToLower().Contains(term.ToLower()) ;
+            }
+            if (page < 1)
+            {
+                data = await _data.User.ListAllAsync(options);
+            }
+
+            else
+            {
+                options.PageNumber = page;
+                options.PageSize = size;
+                data = await _data.User.ListAllAsync(options);
+            }
+            var result = _mapper.Map<IEnumerable<GetAllUserRes>>(data);
+            foreach (var item in result)
+            {
+                var user = await _userManager.FindByIdAsync(item.Id);
+                var roles = await _userManager.GetRolesAsync(user);
+                item.Role = roles.FirstOrDefault();
+                item.LockoutEnd = user.LockoutEnd?.UtcDateTime ?? null;
+            }
+            PaginationResponse<GetAllUserRes> paginationResponse = new PaginationResponse<GetAllUserRes>
+            {
+                PageNumber = page,
+                PageSize = size,
+                // must be above the TotalRecords bc it has multiple Where clauses
+                Items = result,
+                TotalRecords = await _data.User.CountAsync()
+            };
+            return new Result<PaginationResponse<GetAllUserRes>>
+            {
+                Data = paginationResponse,
+                Success = true
+            };
+        }
+        public async Task<Result<string>> UpdateUser(string id,UpdateUserReq req)
+        {
+            Result<string> result = new Result<string>();
+            if (string.IsNullOrEmpty(id))
+            {
+                result.Success = false;
+                result.Message = "Tên người dùng không hợp lệ!";
+                result.Data = null;
+                return result;
+            }
+            var user = await _userManager.FindByIdAsync(id);
+            if (user is null)
+            {
+                result.Success = false;
+                result.Message = "Người dùng không tồn tại!";
+                result.Data = null;
+            }
+            if(req.isLockout==true)
+            {
+                DateTimeOffset currentDate = DateTimeOffset.UtcNow;
+                DateTimeOffset lockoutEndDate = user.LockoutEnd ?? DateTimeOffset.MinValue;
+
+                if (lockoutEndDate > currentDate)
+                {
+                    // unlock
+                    user.LockoutEnd = DateTimeOffset.MinValue; // hoặc currentDate.AddYears(-100)
+                    _data.User.Update(user);
+                    await _data.SaveAsync();
+                    result.Message = "Đã mở khóa cho tài khoản!";
+                    result.Success = true;
+                    return result;
+                }
+                else
+                {
+                    // lock
+                    user.LockoutEnd = currentDate.AddYears(100); // vẫn là UTC
+                    _data.User.Update(user);
+                    await _data.SaveAsync();
+                    result.Message = "Đã khóa tài khoản!";
+                    result.Success = true;
+                    return result;
+                }
+
+            }
+            else
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    result.Message = removeResult.Errors.ToString();
+                    result.Success = false;
+                    return result;
+                }
+                var addResult = await _userManager.AddToRoleAsync(user, req.role);
+                if (!addResult.Succeeded)
+                {
+                    result.Message = addResult.Errors.ToString();
+                    result.Success = false;
+                    return result;
+                }
+                result.Message = "Cập nhật quyền cho người dùng thành công!";
+                result.Success = true;
+                return result;
+            }
+            
+        }
+        public async Task<Result<GetAllUserRes>> GetUserInformationAsync(string id)
+        {
+            ApplicationUser data;
+            QueryOptions<ApplicationUser> options = new QueryOptions<ApplicationUser>
+            {
+                Where=c=>c.Id.Equals(id)
+            };
+            data = await _data.User.GetAsync(options);
+           if(data == null)
+            {
+                return new Result<GetAllUserRes>
+                {
+                    Data = null,
+                    Success = true,
+                    Message="Không tìm thấy người dùng"
+                };
+            }
+            var result = _mapper.Map<GetAllUserRes>(data);
+            var roles = await _userManager.GetRolesAsync(data);
+            result.Role = roles.FirstOrDefault();
+            result.LockoutEnd = data.LockoutEnd?.UtcDateTime ?? null;
+            
+            return new Result<GetAllUserRes>
+            {
+                Data = result,
+                Success = true
+            };
+        }
+        public static bool IsUsernameValid(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username)) return false;
+            if (!IsValidUsername(username)) return false;
+            if (ContainsEmoji(username)) return false;
+
+            return true;
+        }
+        public static bool ContainsEmoji(string input)
+        {
+            var emojiRegex = new Regex(@"[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2100-\u27BF]|[\uFE00-\uFE0F]|\u3030|\u00AE|\u00A9|\u203C|\u2049|\u2122|\u2139|\u2194-\u21AA|\u231A-\u231B|\u23E9-\u23FA|\u24C2|\u25AA-\u25AB|\u25B6|\u25C0|\u25FB-\u25FE|\u2600-\u27BF|\u2934-\u2935|\u2B05-\u2B55|\u303D|\u3297|\u3299|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]",
+                RegexOptions.Compiled);
+            return emojiRegex.IsMatch(input);
+        }
+
+        public static bool IsValidUsername(string username)
+        {
+            // Tên người dùng chỉ chứa chữ cái, số, dấu gạch dưới, dài 3-20 ký tự
+            var regex = new Regex(@"^[a-zA-Z0-9_]{3,20}$");
+            return regex.IsMatch(username);
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
@@ -57,7 +58,6 @@ namespace BookStore.Application.Services
             return new Result<PaginationResponse<Author>>
             {
                 Data = paginationResponse,
-                Message="Successful",
                 Success=true
             };
         }
@@ -74,7 +74,6 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = data,
-                    Message = "Successful"
                 };
             }
             else
@@ -83,7 +82,7 @@ namespace BookStore.Application.Services
                 {
                     Success = false,
                     Data = data,
-                    Message = "Not found Author"
+                    Message = "Không tìm thấy tác giả!"
                 };
             }
             
@@ -103,7 +102,6 @@ namespace BookStore.Application.Services
             {
                 Data=data,
                 Success = true,
-                Message="Successful"
             };
         }
         public async Task<Result<Author>> AddAuthorAsync(AddAuthorReq authorDto,string userName)
@@ -112,10 +110,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var author = new Author()
             {
@@ -126,7 +136,7 @@ namespace BookStore.Application.Services
             _data.Author.Add(author);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Thêm tác giả thành công!";
             result.Data = author;
             return result;
         }
@@ -137,10 +147,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var author = await _data.Author.GetAsync(new QueryOptions<Author>
             {
@@ -149,7 +171,7 @@ namespace BookStore.Application.Services
             if (author == null)
             {
                 result.Success = false;
-                result.Message = "Author not exist";
+                result.Message = "Tác giả không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -159,7 +181,7 @@ namespace BookStore.Application.Services
             _data.Author.Update(author);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Cập nhật tác giả thành công !";
             result.Data = author;
             return result;
         }
@@ -174,14 +196,14 @@ namespace BookStore.Application.Services
             if (author == null)
             {
                 result.Success = false;
-                result.Message = "Author not exist";
+                result.Message = "Tác giả không tồn tại !";
                 result.Data = null;
                 return result;
             }
             _data.Author.Remove(author);
             await _data.SaveAsync();
             result.Success= true;
-            result.Message = "Successfull";
+            result.Message = "Xóa tác giả thành công!";
             return result;
         }
     }

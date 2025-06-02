@@ -27,7 +27,7 @@ namespace BookStore.Domain.DTOs
 
         [StringLength(30)]
         public string? City { get; set; }
-        public Guid[] Details { get; set; } 
+        public Guid[]? Details { get; set; } 
         public string? PaymentMethod { get; set; }
         [StringLength(11)]
         public string? PhoneNumber { get; set; }

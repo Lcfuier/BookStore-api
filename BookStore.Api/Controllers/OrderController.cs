@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Interface;
 using BookStore.Application.Services;
+using BookStore.Domain.Constants;
 using BookStore.Domain.Constants.VnPay;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Result;
@@ -17,25 +18,32 @@ namespace BookStore.Api.Controllers
        
         private readonly IOrderService _orderService;
         private readonly IVnPayService _vnPayService;
-        public OrderController(IOrderService orderService, IVnPayService vnPayService)
+        private readonly IConfiguration _configuration;
+        public OrderController(IOrderService orderService, IVnPayService vnPayService, IConfiguration configuration)
         {
             _orderService = orderService;
-            _vnPayService=vnPayService;
+            _vnPayService = vnPayService;
+            _configuration = configuration;
         }
-        [HttpPost("checkout-vnpay")]
+        [HttpPost("checkout")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize]
-        public async Task<IActionResult> CheckoutVnpay([FromBody] OrderReq req)
+        public async Task<IActionResult> Checkout([FromBody] OrderReq req)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
             var result = await _orderService.Checkout(req,userName);
-            
-            
+            var resultUrl = new Result<string>();
+            resultUrl.Success = true;
             if (!result.Success)
             {
                 return BadRequest(result);
+            }
+            else if (result.Success && result.Data.PaymentMethod.ToLower().Equals(PaymentMethod.PaymentMethodCash.ToLower()))
+            {
+                resultUrl.Data = _configuration["RedirectUrl:success"] + $"{result.Data.OrderId}";
+                return Ok(resultUrl);
             }
             var vnpayRequest = new VnPayRequestModel()
             {
@@ -47,8 +55,10 @@ namespace BookStore.Api.Controllers
             string url="";
             if (req.IsUseToken && !string.IsNullOrEmpty(req.NickName))
             {
+                
                 url = await _vnPayService.CreateTokenPaymentUrl(HttpContext, vnpayRequest, userName,req.NickName);
-                return Ok(url);
+                resultUrl.Data = url;
+                return Ok(resultUrl);
             }
             if(req.IsSaveToken&&!string.IsNullOrEmpty(req.NickName))
             {
@@ -58,7 +68,8 @@ namespace BookStore.Api.Controllers
             {
                 url = _vnPayService.CreatePaymentUrl(HttpContext, vnpayRequest, userName,"");
             }
-            return Ok(url);
+            resultUrl.Data = url;
+            return Ok(resultUrl);
         }
         [AllowAnonymous]
         [HttpGet("vnpay-return")]
@@ -71,20 +82,61 @@ namespace BookStore.Api.Controllers
             VnPayResponeModel? vnpayResponse = await _vnPayService.PaymentExecuteAsync(Request.Query);
             if (vnpayResponse == null)
             {
-                return BadRequest("can't create the response.");
+                return Redirect(_configuration["RedirectUrl:invalid"]);
             }
             if (!vnpayResponse.paymentStatus.Equals("00"))
             {
-                return BadRequest("Error when payment");
+                return Redirect(_configuration["RedirectUrl:error"]);
             }
             var result = await _orderService.VnPayCheckoutUpdate(Guid.Parse(vnpayResponse.BookingId), vnpayResponse, vnpayResponse.userName);
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return Redirect(_configuration["RedirectUrl:failed"]);
             }
 
-            return Ok("Succcessful");
+            return Redirect(_configuration["RedirectUrl:success"] +$"{result.Data}");
+        }
+        [HttpGet("user/orders")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
+        public async Task<IActionResult> GetOrderById(int page,int size,string status,string orderCode)
+        {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _orderService.GetOrderByUserNameAsync(page,size,userName,status,orderCode);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpGet("{id:guid}")]
+        [Authorize]
+        public async Task<IActionResult> GetOrderDeltailById(Guid id)
+        {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _orderService.GetOrderByIdAsync(id,userName);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpPut("{id:guid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateOrder(Guid id,[FromBody]UpdateOrderReq req)
+        {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _orderService.UpdateOrderAsyc(userName,req,id);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
     }
 }

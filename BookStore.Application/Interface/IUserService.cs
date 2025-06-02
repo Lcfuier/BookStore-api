@@ -1,5 +1,6 @@
 ﻿using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
+using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
 using System;
 using System.Collections.Generic;
@@ -24,9 +25,14 @@ namespace BookStore.Application.Interface
         Task<Result<LoginRes>> Verify2FA(string userName, TwoFAReq passcode);
         Task<Result<string>> VerifyOtp(string userName, string Otp);
         Task<Result<GetInformationRes>> GetInformation(string userName);
+        Task<Result<ApplicationUser>> ChangeEmail(string userName);
         Task<ClaimsPrincipal> GetPrincipalFromExpiredToken(string accessToken);
         Task<Result<TwoFactorAuthenticationRes>> Disable2FA(string userName, EnableTwoFaReq passcode);
         Task<Result<LoginRes>> RefreshToken(string userName, RefreshTokenReq req);
+        Task<Result<ApplicationUser>> ChangeEmail(ChangeEmailReq param, string userName);
+        Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term);
+        Task<Result<string>> UpdateUser(string id, UpdateUserReq req);
+        Task<Result<GetAllUserRes>> GetUserInformationAsync(string id);
 
     }
 }

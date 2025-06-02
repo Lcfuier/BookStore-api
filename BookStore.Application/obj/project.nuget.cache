@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+HYu4S4W383kOyZhL57pT95TBdFpftPXOH9TdNkTS9HM/GpgOo3s2xizTGogbBPuYrLtDPCfI9zlmXs7odN9iA==",
+  "dgSpecHash": "2kb4uOaR+09lXFkSNnK4yAg37jZTS2b13pEPigTbFopEIrKF4frsyge1KwoPrcZa3sn/s8n9ebFSGrctwmbZ5w==",
   "success": true,
-  "projectFilePath": "D:\\Workspace\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj",
+  "projectFilePath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DUY\\.nuget\\packages\\automapper\\14.0.0\\automapper.14.0.0.nupkg.sha512",
     "C:\\Users\\DUY\\.nuget\\packages\\firebasestorage.net\\1.0.3\\firebasestorage.net.1.0.3.nupkg.sha512",

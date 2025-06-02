@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
@@ -55,7 +56,6 @@ namespace BookStore.Application.Services
             return new Result<PaginationResponse<Category>>
             {
                 Data = paginationResponse,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -72,7 +72,6 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = data,
-                    Message = "Successful"
                 };
             }
             else
@@ -81,7 +80,7 @@ namespace BookStore.Application.Services
                 {
                     Success = false,
                     Data = data,
-                    Message = "Not found Author"
+                    Message = "Không tìm thấy thể loại"
                 };
             }
 
@@ -101,7 +100,6 @@ namespace BookStore.Application.Services
             {
                 Data = data,
                 Success = true,
-                Message = "Successful"
             };
         }
         public async Task<Result<Category>> AddCategoryAsync(AddCategoryReq CategoryDto, string userName)
@@ -110,10 +108,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var category = new Category()
             {
@@ -124,7 +134,7 @@ namespace BookStore.Application.Services
             _data.Category.Add(category);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Thếm thể loại thành công!";
             result.Data = category;
             return result;
         }
@@ -135,10 +145,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var category = await _data.Category.GetAsync(new QueryOptions<Category>
             {
@@ -147,17 +169,17 @@ namespace BookStore.Application.Services
             if (category == null)
             {
                 result.Success = false;
-                result.Message = "Category not exist";
+                result.Message = "Thể loại không tồn tại!";
                 result.Data = null;
                 return result;
             }
-            category.Name = category.Name;
+            category.Name = categoryDto.Name;
             category.ModifiedTime = DateTime.UtcNow;
             category.ModifiedBy = userName;
             _data.Category.Update(category);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Cập nhật thể loại thành công!";
             result.Data = category;
             return result;
         }
@@ -165,6 +187,7 @@ namespace BookStore.Application.Services
         public async Task<Result<Category>> RemoveCategoryAsync(Guid Id)
         {
             Result<Category> result = new Result<Category>();
+            
             var category = await _data.Category.GetAsync(new QueryOptions<Category>
             {
                 Where = c => c.CategoryId.Equals(Id)
@@ -172,14 +195,14 @@ namespace BookStore.Application.Services
             if (category == null)
             {
                 result.Success = false;
-                result.Message = "Category not exist";
+                result.Message = "Thể loại không tồn tại";
                 result.Data = null;
                 return result;
             }
             _data.Category.Remove(category);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Xóa thể loại thành công!";
             return result;
         }
     }

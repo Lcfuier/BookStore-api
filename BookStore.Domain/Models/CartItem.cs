@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace BookStore.Domain.Models
 {
@@ -20,6 +21,9 @@ namespace BookStore.Domain.Models
         public Book? Book { get; set; }
 
         public Guid CartId { get; set; }
+        [JsonIgnore]
         public Cart? Cart { get; set; }
+
+        public DateTime? ModifiedTime { get; set; }
     }
 }

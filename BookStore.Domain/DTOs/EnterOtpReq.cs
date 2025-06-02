@@ -12,6 +12,6 @@ namespace BookStore.Domain.DTOs
         [Required]
         public string Otp { get; set; }
         [Required]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
     }
 }

@@ -31,11 +31,31 @@ namespace BookStore.Infrastructure.Repositorys
                 }
             }
         }
-        public async Task<GetBookRes> GetBookByIdAsync(Guid Id)
+        public async Task<IEnumerable<BestSellerBookRes>> GetBestSellerBook()
         {
-            var result = await _dbContext.Book.Where(c => c.BookId.Equals(Id))
-                                    .ProjectTo<GetBookRes>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
-            return result;
+            var bestSellerBooks = await _dbContext.OrderItem
+                    .GroupBy(od => od.BookId)
+                    .Select(g => new {
+                     BookId = g.Key,
+                    TotalSold = g.Sum(x => x.Quantity)
+                    })
+                    .OrderByDescending(x => x.TotalSold)
+                    .Take(10)
+                    .Join(_dbContext.Book,
+                    g => g.BookId,
+                    b => b.BookId,
+                    (g, b) => new BestSellerBookRes {
+                        
+                    Id=b.BookId,
+                    Title=b.Title,
+                    AuthorName=b.Author.AuthorFullName,
+                    Price=b.Price,
+                    ImageURL=b.ImageURL,
+                    DiscountPercent=b.DiscountPercent,
+                    TotalSold = g.TotalSold
+                    })
+                .ToListAsync();
+            return bestSellerBooks;
         }
         public void Update(Book book)
         {

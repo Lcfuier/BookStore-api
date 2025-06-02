@@ -71,7 +71,6 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = data,
-                    Message = "Successful"
                 };
             }
             else
@@ -80,7 +79,7 @@ namespace BookStore.Application.Services
                 {
                     Success = false,
                     Data = data,
-                    Message = "Not found Publisher"
+                    Message = "Không tìm thấy nhà xuất bản!"
                 };
             }
 
@@ -100,7 +99,6 @@ namespace BookStore.Application.Services
             {
                 Data = data,
                 Success = true,
-                Message = "Successful"
             };
         }
         public async Task<Result<Publisher>> AddPublisherAsync(AddPublisherReq publisherDto, string userName)
@@ -110,7 +108,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -123,7 +121,7 @@ namespace BookStore.Application.Services
             _data.Publisher .Add(publisher);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Thêm nhà xuất bản thành công!";
             result.Data = publisher;
             return result;
         }
@@ -135,7 +133,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
                 return result;
             }
@@ -146,7 +144,7 @@ namespace BookStore.Application.Services
             if (publisher == null)
             {
                 result.Success = false;
-                result.Message = "Publisher not exist";
+                result.Message = "Nhà xuất bản không tồn tại";
                 result.Data = null;
                 return result;
             }
@@ -156,7 +154,7 @@ namespace BookStore.Application.Services
             _data.Publisher.Update(publisher);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Cập nhật nhà xuất bản thành công !";
             result.Data = publisher;
             return result;
         }
@@ -171,14 +169,14 @@ namespace BookStore.Application.Services
             if (publisher == null)
             {
                 result.Success = false;
-                result.Message = "Publisher not exist";
+                result.Message = "Nhà xuất bản không tồn tại";
                 result.Data = null;
                 return result;
             }
             _data.Publisher.Remove(publisher);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Xóa nhà xuất bản thành công !";
             return result;
         }
     }

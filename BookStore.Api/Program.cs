@@ -1,3 +1,4 @@
+using BookStore.Api.Controllers;
 using BookStore.Api.Extensions;
 using BookStore.Domain.Constants;
 using BookStore.Domain.Models;
@@ -57,11 +58,15 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.None;
 });
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddHttpClient<AddressController>();
 // Register GoogleDriveUploader
 builder.Services.AddLifetimeServices(builder.Configuration);
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    await DbSeeder.SeedDefaulData(scope.ServiceProvider);
 
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -70,7 +75,13 @@ if (app.Environment.IsDevelopment())
 }
 app.UseStaticFiles();
 app.UseSession();
+app.UseCors(options =>
+{
+    options.AllowAnyHeader();
+    options.AllowAnyMethod();
+    options.AllowAnyOrigin();
 
+});
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

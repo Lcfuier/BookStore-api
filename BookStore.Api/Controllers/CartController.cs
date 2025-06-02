@@ -31,7 +31,7 @@ namespace BookStore.Api.Controllers
             return Ok(result);
         }
         [HttpPost("AddCartItem")]
-        public async Task<IActionResult> AddCartItem(AddCartItemReq req)
+        public async Task<IActionResult> AddCartItem([FromBody]AddCartItemReq req)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();

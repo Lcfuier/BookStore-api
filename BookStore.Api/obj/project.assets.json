@@ -9305,11 +9305,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\BookStore.Api.csproj",
+      "projectUniqueName": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\BookStore.Api.csproj",
       "projectName": "BookStore.Api",
-      "projectPath": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\BookStore.Api.csproj",
+      "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\BookStore.Api.csproj",
       "packagesPath": "C:\\Users\\DUY\\.nuget\\packages\\",
-      "outputPath": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\obj\\",
+      "outputPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\DUY\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -9326,11 +9326,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Workspace\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj": {
-              "projectPath": "D:\\Workspace\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj"
+            "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj": {
+              "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj"
             },
-            "D:\\Workspace\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj": {
-              "projectPath": "D:\\Workspace\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj"
+            "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj": {
+              "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj"
             }
           }
         }

@@ -11,5 +11,6 @@ namespace BookStore.Domain.DTOs
         public string OrderId { get; set; }
         public string UserName { get; set; }
         public string NickName { get; set; }
+        public string SaveToken { get; set; }
     }
 }

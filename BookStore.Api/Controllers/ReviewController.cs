@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace BookStore.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/books")]
     public class ReviewController : Controller
     {
         private readonly IReviewService _reviewService;
@@ -14,10 +14,10 @@ namespace BookStore.Api.Controllers
         {
             _reviewService = reviewService;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAllReviewByBookId(int page, int size, Guid bookId)
+        [HttpGet("{id:guid}/reviews")]
+        public async Task<IActionResult> GetAllReviewByBookId(int page, int size, Guid id)
         {
-            var result = await _reviewService.GetReviewsByBookIdAsync(page, size, bookId);
+            var result = await _reviewService.GetReviewsByBookIdAsync(page, size, id);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -25,7 +25,7 @@ namespace BookStore.Api.Controllers
             return Ok(result);
         }
         [Authorize]
-        [HttpPost]
+        [HttpPost("{id:guid}/reviews")]
         public async Task<IActionResult> AddReview([FromBody] AddReviewReq param)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
@@ -38,8 +38,8 @@ namespace BookStore.Api.Controllers
             return Ok(result);
         }
         [Authorize]
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateReview([FromBody] UpdateReviewReq param)
+        [HttpPut("{id:guid}/reviews/{reviewId:guid}")]
+        public async Task<IActionResult> UpdateReview([FromBody] UpdateReviewReq param,Guid reviewId,Guid bookId)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
@@ -52,13 +52,13 @@ namespace BookStore.Api.Controllers
             return Ok(result);
         }
         [Authorize]
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteReview(Guid id)
+        [HttpDelete("{id:guid}/reviews/{reviewId:guid}")]
+        public async Task<IActionResult> DeleteReview(Guid reviewId)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
             string role = claimsIdentity?.FindFirst(ClaimTypes.Role)?.Value ?? "";
-            var result = await _reviewService.RemoveReviewAsync(id,userName,role);
+            var result = await _reviewService.RemoveReviewAsync(reviewId,userName,role);
             if (!result.Success)
             {
                 return BadRequest(result);

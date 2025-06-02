@@ -66,10 +66,26 @@ namespace BookStore.Application.Services
             {
                 options.Where = c => c.publisherID.Equals(req.PublisherId);
             }
+            if (!string.IsNullOrEmpty(req.OrderBy))
+            {
+                if (req.OrderBy.Equals("createdTime"))
+                {
+                    options.OrderBy = c => c.CreatedTime;
+                }
+                else if (req.OrderBy.Equals("title"))
+                {
+                    options.OrderBy = c => c.Title;
+                }
+                if(req.IsAsc is false)
+                {
+                    options.OrderByDirection = "desc";
+                }
+            }
             if (req.Page < 1)
             {
                 data = await _data.Book.ListAllAsync(options);
             }
+            
             else
             {
                 options.PageNumber = req.Page;
@@ -83,12 +99,11 @@ namespace BookStore.Application.Services
                 PageSize = req.Size,
                 // must be above the TotalRecords bc it has multiple Where clauses
                 Items = data,
-                TotalRecords = await _data.Category.CountAsync()
+                TotalRecords = await _data.Book.CountAsync()
             };
             return new Result<PaginationResponse<Book>>
             {
                 Data = paginationResponse,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -107,7 +122,6 @@ namespace BookStore.Application.Services
                 {
                     Success = true,
                     Data = data,
-                    Message = "Successful"
                 };
             }
             else
@@ -116,7 +130,29 @@ namespace BookStore.Application.Services
                 {
                     Success = false,
                     Data = data,
-                    Message = "Not found Book"
+                    Message = "Không tìm thấy sách!"
+                };
+            }
+
+        }
+        public async Task<Result<IEnumerable<BestSellerBookRes>>> GetBestSellerBookAsync()
+        {
+            var data = await _data.Book.GetBestSellerBook();
+            //var data=await _data.Book.GetBookByIdAsync(id);
+            if (data != null)
+            {
+                return new Result<IEnumerable<BestSellerBookRes>>
+                {
+                    Success = true,
+                    Data = data,
+                };
+            }
+            else
+            {
+                return new Result<IEnumerable<BestSellerBookRes>>
+                {
+                    Success = false,
+                    Data = data,
                 };
             }
 
@@ -131,7 +167,7 @@ namespace BookStore.Application.Services
             if (book == null)
             {
                 result.Success = false;
-                result.Message = "Book not exist";
+                result.Message = "Sách không tồn tại";
                 result.Data = null;
                 return result;
             }
@@ -142,7 +178,7 @@ namespace BookStore.Application.Services
             _data.Book.Remove(book);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Xóa sách thành công";
             return result;
         }
         public async Task<Result<Book>> AddBookAsync(AddBookReq bookDto, IFormFile image, string userName)
@@ -151,10 +187,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var book = new Book();
             book = _mapper.Map<Book>(bookDto);
@@ -163,10 +211,11 @@ namespace BookStore.Application.Services
             await _data.Book.AddNewCategoryAsync(book, bookDto.CategoryIds, _data.Category);
             book.CreatedBy = userName;
             book.CreatedTime = DateTime.UtcNow;
+            book.PublicationDate=bookDto.PublicationDate.ToUniversalTime();
             _data.Book.Add(book);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Thêm sách thành công";
             result.Data = book;
             return result;
         }
@@ -176,10 +225,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "User not exist";
-                result.Data = null;
-                return result;
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             QueryOptions<Book> options = new()
             {
@@ -196,7 +257,7 @@ namespace BookStore.Application.Services
             }
             string url = book.ImageURL;
             book.Title=bookDto.Title;
-            book.PublicationDate=bookDto.PublicationDate;
+            book.PublicationDate=bookDto.PublicationDate.ToUniversalTime(); 
             book.Description=bookDto.Description;
             book.Isbn13 =bookDto.Isbn13;
             book.DiscountPercent=bookDto.DiscountPercent;
@@ -222,7 +283,7 @@ namespace BookStore.Application.Services
             _data.Book.Update(book);
             await _data.SaveAsync();
             result.Success = true;
-            result.Message = "Successfull";
+            result.Message = "Cập nhật sách thành công!";
             result.Data = book;
             return result;
         }

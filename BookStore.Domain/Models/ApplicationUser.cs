@@ -18,7 +18,7 @@ namespace BookStore.Domain.Models
         [StringLength(50)]
         public string LastName { get; set; }
         [NotMapped]
-        public string FullName => $"{FirstName} {LastName}";
+        public string FullName => $"{LastName} {FirstName}";
         public string? TwoFactorGoogleCode { get; set; }
         public bool? TwoFactorGoogleEnabled { get; set; }
         public string? RefreshToken { get; set; }

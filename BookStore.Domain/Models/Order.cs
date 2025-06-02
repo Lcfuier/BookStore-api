@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace BookStore.Domain.Models
 {
@@ -40,11 +41,13 @@ namespace BookStore.Domain.Models
         [StringLength(128)]
         [Unicode(false)]
         public string? TrackingNumber { get; set; }
+        public string? Carrier { get; set; }
         public string? ShippingStatus { get; set; }
         public string? ShippingCost { get; set; }
         [StringLength(20)]
         [Unicode(false)]
         public string? PaymentStatus { get; set; }
+        public string? OrderCode { get; set; }  
         public string? PaymentMethod { get; set; }
         public DateTime? PaymentTime { get; set; }
         //audit

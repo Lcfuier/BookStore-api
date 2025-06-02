@@ -14,5 +14,6 @@ namespace BookStore.Domain.Constants
         public const string PaymentStatusRejected = "Rejected";
         public const string PaymentStatusRefunded = "Refunded";
         public const string PaymentStatusCancelled = "Cancelled";
+        public const string PaymentStatusCash = "Cash";
     }
 }

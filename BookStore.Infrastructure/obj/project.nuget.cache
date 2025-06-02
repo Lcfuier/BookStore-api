@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KNCv+iK9J0uNxqtzYNLFfdNdZ4cAIQoxIDdq8PJKu973yn5zsi8Gsl3BoRxSGEQ4qGBevyPudUn+D40nrALaHA==",
+  "dgSpecHash": "MJvOuI/o+uE7rcj+btwySa86RheLqxz8259nw9Ik7o3ZJ7WK+Qxm9+82zj1W6h8f4dhLMj0EFx4f1whjrtaE1A==",
   "success": true,
-  "projectFilePath": "D:\\Workspace\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj",
+  "projectFilePath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DUY\\.nuget\\packages\\automapper\\14.0.0\\automapper.14.0.0.nupkg.sha512",
     "C:\\Users\\DUY\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",

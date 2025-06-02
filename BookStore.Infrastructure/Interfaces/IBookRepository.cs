@@ -12,7 +12,7 @@ namespace BookStore.Infrastructure.Interfaces
     public interface IBookRepository : IRepository<Book>
     {
         Task AddNewCategoryAsync(Book book, Guid[] categoriesId, ICategoryRepository categoryData);
-        Task<GetBookRes> GetBookByIdAsync(Guid Id);
+        Task<IEnumerable<BestSellerBookRes>> GetBestSellerBook();
         void Update(Book book);
     }
 }

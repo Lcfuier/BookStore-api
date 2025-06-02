@@ -1,6 +1,7 @@
 ﻿using BookStore.Domain.Constants.VnPay;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
+using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,12 @@ namespace BookStore.Application.Interface
 {
     public interface IOrderService
     {
-        Task<Result<IEnumerable<Order>>> GetOrderByUserNameAsync(string userId);
+        Task<Result<PaginationResponse<GetOrderByUserNameRes>>> GetOrderByUserNameAsync(int page, int size, string userName,string status,string orderCode);
         Task<Result<Order>> Checkout(OrderReq req, string userName);
-        Task<Result<Order>> VnPayCheckoutUpdate(Guid id, VnPayResponeModel respone, string userName);
-
+        Task<Result<string>> VnPayCheckoutUpdate(Guid id, VnPayResponeModel respone, string userName);
+        Task<Result<GetOrderByIdRes>> GetOrderByIdAsync(Guid id, string username);
+        Task<Result<GetOrderByIdRes>> UpdateOrderAsyc(string username, UpdateOrderReq req,Guid id);
+        Task<List<BookSoldStatRes>> GetBooksSoldByDate(DateFilter filter);
+        Task<List<RevenuePointRes>> GetRevenueByDate(DateFilter filter);
     }
 }

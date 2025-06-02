@@ -25,6 +25,7 @@ namespace BookStore.Api.Extensions
             services.AddScoped<IVnPayService, VnPayService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<IPaymentProfileService, PaymentProfileService>();
             return services;
         }
         private static IServiceCollection AddAuth(this IServiceCollection services,

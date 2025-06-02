@@ -139,9 +139,6 @@ namespace BookStore.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CartId1")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
@@ -160,8 +157,6 @@ namespace BookStore.Infrastructure.Migrations
 
                     b.HasKey("CartId");
 
-                    b.HasIndex("CartId1");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Cart");
@@ -178,6 +173,9 @@ namespace BookStore.Infrastructure.Migrations
 
                     b.Property<Guid>("CartId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ModifiedTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -232,11 +230,9 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId1")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserId2")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ChatId");
@@ -287,6 +283,9 @@ namespace BookStore.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<string>("Carrier")
+                        .HasColumnType("text");
+
                     b.Property<string>("City")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
@@ -309,6 +308,9 @@ namespace BookStore.Infrastructure.Migrations
 
                     b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OrderCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("OrderStatus")
                         .IsRequired()
@@ -518,29 +520,6 @@ namespace BookStore.Infrastructure.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "cf3c63c9-7d4d-4ecb-ac32-797eb817c0af",
-                            ConcurrencyStamp = "1",
-                            Name = "Admin",
-                            NormalizedName = "Admin"
-                        },
-                        new
-                        {
-                            Id = "899f43cc-36d9-477a-b24a-0ab78a095663",
-                            ConcurrencyStamp = "2",
-                            Name = "Librarian",
-                            NormalizedName = "Librarian"
-                        },
-                        new
-                        {
-                            Id = "c2020658-1184-4a32-beed-cdcdddb3de60",
-                            ConcurrencyStamp = "3",
-                            Name = "User",
-                            NormalizedName = "User"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -801,10 +780,6 @@ namespace BookStore.Infrastructure.Migrations
 
             modelBuilder.Entity("BookStore.Domain.Models.Cart", b =>
                 {
-                    b.HasOne("BookStore.Domain.Models.Cart", null)
-                        .WithMany("Carts")
-                        .HasForeignKey("CartId1");
-
                     b.HasOne("BookStore.Domain.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -837,15 +812,11 @@ namespace BookStore.Infrastructure.Migrations
                 {
                     b.HasOne("BookStore.Domain.Models.ApplicationUser", "User1")
                         .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId1");
 
                     b.HasOne("BookStore.Domain.Models.ApplicationUser", "User2")
                         .WithMany()
-                        .HasForeignKey("UserId2")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId2");
 
                     b.Navigation("User1");
 
@@ -997,8 +968,6 @@ namespace BookStore.Infrastructure.Migrations
             modelBuilder.Entity("BookStore.Domain.Models.Cart", b =>
                 {
                     b.Navigation("CartItems");
-
-                    b.Navigation("Carts");
                 });
 
             modelBuilder.Entity("BookStore.Domain.Models.Chat", b =>

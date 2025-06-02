@@ -1,19 +1,39 @@
 {
   "Files": [
     {
-      "Id": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\1ad95b4a-cf92-46e8-bb10-4a882d1b9498.jpg",
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\0039fd42-55c2-46da-84fc-4a6b7c9b2cf3.jpg",
+      "PackagePath": "staticwebassets\\uploads\\0039fd42-55c2-46da-84fc-4a6b7c9b2cf3.jpg"
+    },
+    {
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\0832bd3c-6b89-4d15-806a-626e13c5be37.jpg",
+      "PackagePath": "staticwebassets\\uploads\\0832bd3c-6b89-4d15-806a-626e13c5be37.jpg"
+    },
+    {
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\1ad95b4a-cf92-46e8-bb10-4a882d1b9498.jpg",
       "PackagePath": "staticwebassets\\uploads\\1ad95b4a-cf92-46e8-bb10-4a882d1b9498.jpg"
     },
     {
-      "Id": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\1d65e4ff-7160-4908-8299-f550837f78ac.jpg",
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\1d65e4ff-7160-4908-8299-f550837f78ac.jpg",
       "PackagePath": "staticwebassets\\uploads\\1d65e4ff-7160-4908-8299-f550837f78ac.jpg"
     },
     {
-      "Id": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\3e183953-acba-46ea-93a1-ffd69170fa07.jpg",
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\30ea35f6-908d-4af3-a6eb-8b7d71e5b737.jpeg",
+      "PackagePath": "staticwebassets\\uploads\\30ea35f6-908d-4af3-a6eb-8b7d71e5b737.jpeg"
+    },
+    {
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\3e183953-acba-46ea-93a1-ffd69170fa07.jpg",
       "PackagePath": "staticwebassets\\uploads\\3e183953-acba-46ea-93a1-ffd69170fa07.jpg"
     },
     {
-      "Id": "D:\\Workspace\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\bb900ab1-0d1e-4bcb-94ac-333380e27100.jpg",
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\7c097a05-0578-460e-bdc0-8f19c0861151.jpg",
+      "PackagePath": "staticwebassets\\uploads\\7c097a05-0578-460e-bdc0-8f19c0861151.jpg"
+    },
+    {
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\96ca872e-969e-4185-b4a3-d20ac5076a2c.jpg",
+      "PackagePath": "staticwebassets\\uploads\\96ca872e-969e-4185-b4a3-d20ac5076a2c.jpg"
+    },
+    {
+      "Id": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\wwwroot\\uploads\\bb900ab1-0d1e-4bcb-94ac-333380e27100.jpg",
       "PackagePath": "staticwebassets\\uploads\\bb900ab1-0d1e-4bcb-94ac-333380e27100.jpg"
     },
     {

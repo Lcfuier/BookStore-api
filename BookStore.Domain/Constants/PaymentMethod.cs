@@ -10,6 +10,6 @@ namespace BookStore.Domain.Constants
     {
         public const string PaymentMethodVnPay = "Vnpay";
         public const string PaymentMethodPayPal = "Paypal";
-        public const string PaymentMethodCost = "Cost";
+        public const string PaymentMethodCash = "Cash";
     }
 }

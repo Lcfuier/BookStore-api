@@ -18,8 +18,6 @@ namespace BookStore.Domain.Models
         public DateTime? ModifiedTime { get; set; }
         public string? ModifiedBy { get; set; }
         //
-
-        public ICollection<Cart>? Carts { get; set; }
         [BindNever]
         public string UserId { get; set; }
         [ForeignKey(nameof(UserId))]

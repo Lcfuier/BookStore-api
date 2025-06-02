@@ -13,14 +13,11 @@ namespace BookStore.Domain.Models
     {
         [Key]
         public Guid ChatId { get; set; }
-        public string UserId1 { get; set; }
-        [ForeignKey(nameof(UserId1))]
+        public string? UserId { get; set; }
+        [ForeignKey(nameof(UserId))]
         [ValidateNever]
-        public ApplicationUser? User1 { get; set; }
-        public string UserId2 { get; set; }
-        [ForeignKey(nameof(UserId2))]
-        [ValidateNever]
-        public ApplicationUser? User2 { get; set; }
+        public ApplicationUser? User { get; set; }
+        public string? LastSenderId { get; set; }
 
         //audit
         public DateTime? CreatedTime { get; set; }

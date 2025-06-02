@@ -9,8 +9,6 @@ namespace BookStore.Domain.DTOs
 {
     public class UpdateInformationReq
     {
-        [EmailAddress] 
-        public string EmailAddress { get; set;}
         [MaxLength(11)]
         public string PhoneNumber { get; set; }
         public string FirstName { get; set; }

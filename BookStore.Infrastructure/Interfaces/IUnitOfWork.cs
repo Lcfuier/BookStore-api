@@ -20,6 +20,8 @@ namespace BookStore.Infrastructure.Interface
         IOrderDetailRepository OrderDetail { get; }
         IOrderRepository Order { get; }
         IReviewRepository Review { get; }
+        IChatRepository Chat { get; }
+        IMessageRepository Message { get; }
         Task SaveAsync();
     }
 }

@@ -31,13 +31,11 @@ namespace BookStore.Api.Controllers
                 return BadRequest(result);
             }
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(result.Data);
-            //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            var callbackUrl = Url.Action(nameof(ConfirmEmail), "Authenticate", new { token = code, userName = result.Data.NormalizedUserName }, Request.Scheme);
-            /*string url = $"{_configuration["UrlConfirmEmail:Url"]}?username={Uri.EscapeDataString(result.Data.NormalizedUserName)}&token={Uri.EscapeDataString(code)}";
-            await SendEmailAsync(result.Data.Email, "Confirm your email",
-            $"Please confirm your account by <a href='{url}'>clicking here</a>.");*/
-            await SendEmailAsync(result.Data.Email, "Confirm your email",
-            $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
+            code = Uri.EscapeDataString(code);
+            var confirmUrlBase = _configuration["UrlConfirmEmail:Url"];
+            var callbackUrl = $"{confirmUrlBase}?token={code}&userName={result.Data.UserName}";
+            await SendEmailAsync(result.Data.Email, "Xác nhận Email của bạn",
+             $"Vui lòng xác nhận tài khoản của bạn bằng cách <a href='{callbackUrl}'>nhấn vào đây</a>.");
             return Ok(new Result<string>
             {
                 Data = null,
@@ -85,7 +83,7 @@ namespace BookStore.Api.Controllers
             {
                 return BadRequest(result);
             }
-            var token = await _userManager.GenerateUserTokenAsync(result.Data, TokenOptions.DefaultPhoneProvider, "ResetPassword");
+            var token = await _userManager.GenerateUserTokenAsync(result.Data, TokenOptions.DefaultPhoneProvider, "veriyOtp");
             HttpContext.Session.SetString("UserNameForgotPassWord", param.UserName);
             await SendEmailAsync(result.Data.Email, "Reset your password",
            $"Your reset password OTP : {token}");
@@ -98,13 +96,11 @@ namespace BookStore.Api.Controllers
         [HttpPost("Verify-Otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] EnterOtpReq req)
         {
-            var userName = HttpContext.Session.GetString("UserNameForgotPassWord");
             var result = await _userService.VerifyOtp(req.UserName, req.Otp);
             if (result.Success == false)
             {
                 return BadRequest(result);
             }
-            HttpContext.Session.SetString("OtpResetPassword", "True");
             return Ok(new Result<string>
             {
                 Message = result.Message,

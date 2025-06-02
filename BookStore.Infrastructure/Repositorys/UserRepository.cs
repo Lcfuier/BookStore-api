@@ -1,6 +1,7 @@
 ﻿using BookStore.Domain.Models;
 using BookStore.Infrastructure.Data;
 using BookStore.Infrastructure.Interface;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,5 @@ namespace BookStore.Infrastructure.Repositorys
         {
             _dbContext.Update(user);
         }
-
     }
 }

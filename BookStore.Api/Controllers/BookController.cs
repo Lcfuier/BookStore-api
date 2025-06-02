@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace BookStore.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]s")]
     public class BookController : Controller
     {
         private readonly IBookService _bookService;
@@ -19,6 +19,16 @@ namespace BookStore.Api.Controllers
         public async Task<IActionResult> GetAllBook([FromQuery] GetAllBookReq req)
         {
             var result = await _bookService.GetAllBooksAsync(req);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpGet("best-sellers")]
+        public async Task<IActionResult> GetBestSellerBook()
+        {
+            var result = await _bookService.GetBestSellerBookAsync();
             if (!result.Success)
             {
                 return BadRequest(result);

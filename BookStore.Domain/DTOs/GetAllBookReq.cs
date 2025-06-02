@@ -10,9 +10,11 @@ namespace BookStore.Domain.DTOs
     {
         public int Page { get; set; }
         public int Size { get; set; }
-        public string term { get; set; }
+        public string? term { get; set; }
         public Guid? CategoryId { get; set; }
         public Guid? AuthorId { get; set; }
         public Guid? PublisherId { get; set; }
+        public string? OrderBy { get; set; }
+        public Boolean? IsAsc { get; set; }=true;
     }
 }
