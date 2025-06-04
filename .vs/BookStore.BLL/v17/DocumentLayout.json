@@ -58,8 +58,7 @@
               "RelativeToolTip": "BookStore.Api\\appsettings.json",
               "ViewState": "AQIAABgAAAAAAAAAAAAAACEAAABNAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-04T11:40:43.104Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-04T11:40:43.104Z"
             },
             {
               "$type": "Document",
@@ -84,8 +83,7 @@
               "RelativeToolTip": "BookStore.Application\\Services\\UserService.cs",
               "ViewState": "AQIAAHUAAAAAAAAAAAAcwIMAAABoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-04T09:27:54.969Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-04T09:27:54.969Z"
             }
           ]
         }
