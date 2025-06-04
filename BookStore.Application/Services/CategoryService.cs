@@ -116,7 +116,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Category>
                 {
@@ -153,7 +153,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Category>
                 {
@@ -184,10 +184,29 @@ namespace BookStore.Application.Services
             return result;
         }
 
-        public async Task<Result<Category>> RemoveCategoryAsync(Guid Id)
+        public async Task<Result<Category>> RemoveCategoryAsync(Guid Id,string userName)
         {
             Result<Category> result = new Result<Category>();
-            
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Category>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             var category = await _data.Category.GetAsync(new QueryOptions<Category>
             {
                 Where = c => c.CategoryId.Equals(Id)

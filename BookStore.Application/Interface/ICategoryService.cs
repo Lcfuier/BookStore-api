@@ -17,7 +17,7 @@ namespace BookStore.Application.Interface
         Task<Result<IEnumerable<Category>>> GetCategoryByTermAsync(string term);
         Task<Result<Category>> AddCategoryAsync(AddCategoryReq CategoryDto, string userName);
         Task<Result<Category>> UpdateCategoryAsync(UpdateCategoryReq categoryDto, string userName);
-        Task<Result<Category>> RemoveCategoryAsync(Guid Id);
+        Task<Result<Category>> RemoveCategoryAsync(Guid Id, string userName);
 
     }
 }

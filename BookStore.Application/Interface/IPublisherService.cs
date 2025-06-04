@@ -17,7 +17,7 @@ namespace BookStore.Application.Interface
         Task<Result<IEnumerable<Publisher>>> GetPublisherByTermAsync(string term);
         Task<Result<Publisher>> AddPublisherAsync(AddPublisherReq publisherDto, string userName);
         Task<Result<Publisher>> UpdatePublisherAsync(UpdatePublisherReq publisherDto, string userName);
-        Task<Result<Publisher>> RemovePublisherAsync(Guid Id);
+        Task<Result<Publisher>> RemovePublisherAsync(Guid Id, string userName);
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
@@ -54,7 +55,6 @@ namespace BookStore.Application.Services
             return new Result<PaginationResponse<Publisher>>
             {
                 Data = paginationResponse,
-                Message = "Successful",
                 Success = true
             };
         }
@@ -107,10 +107,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "Người dùng không tồn tại!";
-                result.Data = null;
-                return result;
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var publisher = new Publisher()
             {
@@ -132,10 +144,22 @@ namespace BookStore.Application.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                result.Success = false;
-                result.Message = "Người dùng không tồn tại!";
-                result.Data = null;
-                return result;
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
             }
             var publisher = await _data.Publisher  .GetAsync(new QueryOptions<Publisher>
             {
@@ -159,9 +183,29 @@ namespace BookStore.Application.Services
             return result;
         }
 
-        public async Task<Result<Publisher>> RemovePublisherAsync(Guid Id)
+        public async Task<Result<Publisher>> RemovePublisherAsync(Guid Id,string userName)
         {
             Result<Publisher> result = new Result<Publisher>();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Publisher>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             var publisher = await _data.Publisher.GetAsync(new QueryOptions<Publisher>
             {
                 Where = c => c.PublisherId.Equals(Id)

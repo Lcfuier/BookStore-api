@@ -36,5 +36,6 @@ namespace BookStore.Domain.DTOs
         public bool IsSaveToken { get; set; } = false;
 
         public bool IsUseToken { get; set; } = false;
+        public Decimal ShippingCost { get; set; }
     }
 }

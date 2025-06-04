@@ -79,7 +79,7 @@ namespace BookStore.Api.Controllers
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
-            var result = await _bookService.RemoveBookAsync(id);
+            var result = await _bookService.RemoveBookAsync(id, userName);
             if (!result.Success)
             {
                 return BadRequest(result);

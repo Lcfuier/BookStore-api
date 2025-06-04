@@ -118,7 +118,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Author>
                 {
@@ -155,7 +155,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Author>
                 {
@@ -186,9 +186,29 @@ namespace BookStore.Application.Services
             return result;
         }
 
-        public async Task<Result<Author>> RemoveAuthorAsync(Guid authorId)
+        public async Task<Result<Author>> RemoveAuthorAsync(Guid authorId,string userName)
         {
             Result<Author> result = new Result<Author>();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Author>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             var author = await _data.Author.GetAsync(new QueryOptions<Author>
             {
                 Where = c => c.Id.Equals(authorId)

@@ -157,7 +157,9 @@ namespace BookStore.Application.Services
                             return result;  
                         }*/
                         result.Data = null;
-                        result.Message = "Enter 2FA code";
+                        result.Message = "Nhập mã xác thực 2 bước của bạn!";
+                        result.Success = true;
+                        return result;
                     }
                     else
                     {
@@ -418,7 +420,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
             }
             string UserUniqueKey = Guid.NewGuid().ToString();
@@ -431,7 +433,6 @@ namespace BookStore.Application.Services
                 _data.User.Update(user);
                 await _data.SaveAsync();
                 result.Success = true;
-                result.Message = "successful";
                 TwoFactorAuthenticationRes data = new TwoFactorAuthenticationRes();
                 data.ManualKey = setupInfo.ManualEntryKey;
                 data.QrCodeImageBase64 = setupInfo.QrCodeSetupImageUrl;
@@ -465,7 +466,7 @@ namespace BookStore.Application.Services
                     user.TwoFactorGoogleEnabled = true;
                     _data.User.Update(user);
                     await _data.SaveAsync();
-                    result.Message = "successful";
+                    result.Message = "Kích hoạt xác thực 2 bước thành công!";
                     result.Success = true;
                 }
                 catch (Exception ex)
@@ -476,7 +477,7 @@ namespace BookStore.Application.Services
             }
             else
             {
-                result.Message = "invalid code";
+                result.Message = "Mã xác thực không hợp kệ!";
                 result.Success = false;
             }
             // Step 4: Return the QR code and manual key as a response
@@ -488,7 +489,7 @@ namespace BookStore.Application.Services
             if (string.IsNullOrEmpty(userName))
             {
                 result.Success = false;
-                result.Message = "Unknow user";
+                result.Message = "Tên người dùng không hợp lệ!";
                 result.Data = null;
                 return result;
             }
@@ -498,7 +499,7 @@ namespace BookStore.Application.Services
             if (user is null)
             {
                 result.Success = false;
-                result.Message = "user not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
             }
 
@@ -510,30 +511,35 @@ namespace BookStore.Application.Services
                 if (!isValid)
                 {
                     result.Success = false;
-                    result.Message = "Token is invalid";
+                    result.Message = "Mã xác thực không hợp lệ!";
                     result.Data = null;
                     return result;
                 }
                 else
                 {
                     var authClaim = new List<Claim>
-                    {
-                         new Claim(ClaimTypes.Name,user.NormalizedUserName),
-                        new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    };
+{
+    new Claim(ClaimTypes.Name,user.NormalizedUserName),
+    new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+};
                     var userRoles = await _userManager.GetRolesAsync(user);
+                    if (!userRoles.Any())
+                    {
+                        // Debug log hoặc breakpoint
+                        Console.WriteLine("User has no roles assigned.");
+                    }
                     foreach (var role in userRoles)
                     {
                         authClaim.Add(new Claim(ClaimTypes.Role, role));
                     }
                     var jwtToken = GetToken(authClaim);
-                    result.Success = true;
-                    result.Message = "Login successful";
+
                     result.Data = new LoginRes()
                     {
                         AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                         RefreshToken = GenerateRefreshToken(),
                     };
+                    result.Success = true;
                     user.RefreshToken = result.Data.RefreshToken;
                     user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
                     await _userManager.UpdateAsync(user);
@@ -549,7 +555,7 @@ namespace BookStore.Application.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not exist";
+                result.Message = "Người dùng không tồn tại!";
                 result.Data = null;
             }
             TwoFactorAuthenticator TwoFacAuth = new TwoFactorAuthenticator();
@@ -562,7 +568,7 @@ namespace BookStore.Application.Services
                     user.TwoFactorGoogleEnabled = false;
                     _data.User.Update(user);
                     await _data.SaveAsync();
-                    result.Message = "successful";
+                    result.Message = "Hủy kích hoạt xác thực 2 lớp thành công!";
                     result.Success = true;
                 }
                 catch (Exception ex)
@@ -573,7 +579,7 @@ namespace BookStore.Application.Services
             }
             else
             {
-                result.Message = "invalid code";
+                result.Message = "Mã xác thực không hợp lệ !";
                 result.Success = false;
             }
             // Step 4: Return the QR code and manual key as a response

@@ -168,7 +168,8 @@ namespace BookStore.Application.Services
                 _data.Book.Update(book);
                 _data.CartItem.Remove(detail);
             }
-            order.Total = amount;
+            order.ShippingCost = req.ShippingCost.ToString();
+            order.Total = amount + (decimal)req.ShippingCost;
             if (!req.PaymentMethod.Equals(PaymentMethod.PaymentMethodCash))
             {
                 order.PaymentStatus = PaymentStatus.PaymentStatusCash;
@@ -291,6 +292,8 @@ namespace BookStore.Application.Services
                 result.Success = false;
                 return result;
             }
+            data.ModifiedTime = DateTime.UtcNow;
+            data.ModifiedBy = user.UserName;
             if (req.OrderStatus.Equals(OrderStatus.StatusInProcess))
             {
                 if (roles is null || (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower()))

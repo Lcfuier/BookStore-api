@@ -42,7 +42,6 @@ namespace BookStore.Domain.Models
         [Unicode(false)]
         public string? TrackingNumber { get; set; }
         public string? Carrier { get; set; }
-        public string? ShippingStatus { get; set; }
         public string? ShippingCost { get; set; }
         [StringLength(20)]
         [Unicode(false)]

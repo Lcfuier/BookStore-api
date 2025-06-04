@@ -66,7 +66,7 @@ namespace BookStore.Api.Controllers
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
-            var result = await _authorService.RemoveAuthorAsync(id);
+            var result = await _authorService.RemoveAuthorAsync(id,userName);
             if (!result.Success)
             {
                 return BadRequest(result);

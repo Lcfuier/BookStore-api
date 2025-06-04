@@ -157,9 +157,29 @@ namespace BookStore.Application.Services
             }
 
         }
-        public async Task<Result<Book>> RemoveBookAsync(Guid Id)
+        public async Task<Result<Book>> RemoveBookAsync(Guid Id,string userName)
         {
             Result<Book> result = new Result<Book>();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return new Result<Book>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             var book = await _data.Book.GetAsync(new QueryOptions<Book>
             {
                 Where = c => c.BookId.Equals(Id)
@@ -195,7 +215,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Book>
                 {
@@ -233,7 +253,7 @@ namespace BookStore.Application.Services
                 };
             }
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() || roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
             {
                 return new Result<Book>
                 {

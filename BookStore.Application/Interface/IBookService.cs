@@ -15,7 +15,7 @@ namespace BookStore.Application.Interface
     {
         Task<Result<PaginationResponse<Book>>> GetAllBooksAsync(GetAllBookReq req);
         Task<Result<Book>> GetBookByIdAsync(Guid id);
-        Task<Result<Book>> RemoveBookAsync(Guid Id);
+        Task<Result<Book>> RemoveBookAsync(Guid Id, string userName);
         Task<Result<Book>> AddBookAsync(AddBookReq bookDto, IFormFile image, string userName);
         Task<Result<Book>> UpdateBookAsync(UpdateBookReq bookDto, IFormFile? newImage, string userName, Guid Id);
         Task<Result<IEnumerable<BestSellerBookRes>>> GetBestSellerBookAsync();

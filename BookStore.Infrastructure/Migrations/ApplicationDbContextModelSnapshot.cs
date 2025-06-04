@@ -229,17 +229,15 @@ namespace BookStore.Infrastructure.Migrations
                     b.Property<DateTime?>("LastMessageAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId1")
+                    b.Property<string>("LastSenderId")
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId2")
+                    b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.HasKey("ChatId");
 
-                    b.HasIndex("UserId1");
-
-                    b.HasIndex("UserId2");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Chat");
                 });
@@ -332,9 +330,6 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("character varying(11)");
 
                     b.Property<string>("ShippingCost")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ShippingStatus")
                         .HasColumnType("text");
 
                     b.Property<decimal>("Total")
@@ -810,17 +805,11 @@ namespace BookStore.Infrastructure.Migrations
 
             modelBuilder.Entity("BookStore.Domain.Models.Chat", b =>
                 {
-                    b.HasOne("BookStore.Domain.Models.ApplicationUser", "User1")
+                    b.HasOne("BookStore.Domain.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
-                    b.HasOne("BookStore.Domain.Models.ApplicationUser", "User2")
-                        .WithMany()
-                        .HasForeignKey("UserId2");
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BookStore.Domain.Models.Message", b =>
