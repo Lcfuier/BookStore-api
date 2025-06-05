@@ -170,13 +170,16 @@ namespace BookStore.Application.Services
             }
             order.ShippingCost = req.ShippingCost.ToString();
             order.Total = amount + (decimal)req.ShippingCost;
-            if (req.PaymentMethod.ToLower().Equals(PaymentMethod.PaymentMethodCash.ToLower()))
+            if (req.PaymentMethod.ToLower()==PaymentMethod.PaymentMethodCash.ToLower())
             {
                 order.PaymentStatus = PaymentStatus.PaymentStatusCash;
                 order.OrderStatus = OrderStatus.StatusApproved;
             }
-            order.PaymentMethod = req.PaymentMethod;
-            order.PaymentStatus=PaymentStatus.PaymentStatusPending;
+            else
+            {
+                order.PaymentMethod = req.PaymentMethod;
+                order.PaymentStatus = PaymentStatus.PaymentStatusPending;
+            }
             order.OrderCode = GenerateOrderCode();
             await AddOrderAsync(order);
             result.Success = true;
