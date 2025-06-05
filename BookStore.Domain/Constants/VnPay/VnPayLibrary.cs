@@ -164,11 +164,21 @@ namespace BookStore.Domain.Constants.VnPay
         }
         public static string GetIpAddress(HttpContext context)
         {
-            var ipAddress = "127.0.0.1";
             try
             {
-                var remoteIpAddress = context.Connection.RemoteIpAddress;
+                // Ưu tiên lấy từ X-Forwarded-For (do proxy hoặc load balancer set)
+                var xForwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(xForwardedFor))
+                {
+                    var ip = xForwardedFor.Split(',').FirstOrDefault()?.Trim();
+                    if (!string.IsNullOrEmpty(ip) && !IsLocalIp(ip))
+                    {
+                        return ip;
+                    }
+                }
 
+                // Lấy từ connection nếu không có header
+                var remoteIpAddress = context.Connection.RemoteIpAddress;
                 if (remoteIpAddress != null)
                 {
                     if (remoteIpAddress.IsIPv4MappedToIPv6)
@@ -176,26 +186,27 @@ namespace BookStore.Domain.Constants.VnPay
                         remoteIpAddress = remoteIpAddress.MapToIPv4();
                     }
 
-                    if (remoteIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                    var ip = remoteIpAddress.ToString();
+                    if (!IsLocalIp(ip))
                     {
-                        remoteIpAddress = Dns.GetHostEntry(remoteIpAddress)
-                            .AddressList
-                            .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
-                    }
-
-                    if (remoteIpAddress != null)
-                    {
-                        ipAddress = remoteIpAddress.ToString();
+                        return ip;
                     }
                 }
             }
             catch (Exception ex)
             {
-                return "Invalid IP:" + ex.Message;
+                return "Invalid IP: " + ex.Message;
             }
 
-            return ipAddress;
+            // Fallback nếu chỉ chạy local: vẫn để IP hợp lệ nhưng an toàn (VNPay đôi khi chấp nhận 0.0.0.0 hơn là 127.0.0.1)
+            return "0.0.0.0";
         }
+
+        private static bool IsLocalIp(string ip)
+        {
+            return ip.StartsWith("127.") || ip == "::1" || ip == "0.0.0.1";
+        }
+
 
     }
 
