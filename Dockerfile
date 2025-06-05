@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Copy solution và project files vào container
 COPY BookStore.sln .
-COPY BookStore.API/BookStore.API.csproj BookStore.API/
+COPY BookStore.API/BookStore.Api.csproj BookStore.Api/
 COPY BookStore.Application/BookStore.Application.csproj BookStore.Application/
 COPY BookStore.Domain/BookStore.Domain.csproj BookStore.Domain/
 COPY BookStore.Infrastructure/BookStore.Infrastructure.csproj BookStore.Infrastructure/
@@ -16,7 +16,7 @@ RUN dotnet restore
 COPY . .
 
 # Build và publish project API
-RUN dotnet publish BookStore.API/BookStore.API.csproj -c Release -o /app/publish
+RUN dotnet publish BookStore.API/BookStore.Api.csproj -c Release -o /app/publish
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
