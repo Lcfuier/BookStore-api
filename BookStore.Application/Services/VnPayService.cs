@@ -50,7 +50,7 @@ namespace BookStore.Application.Services
                 vnpay.AddRequestData("vnp_txn_desc", txnDesc);
                 vnpay.AddRequestData("vnp_return_url", _configuration["VnPay:PaymentBackReturnUrl"]);
                 vnpay.AddRequestData("vnp_ip_addr", Utils.GetIpAddress(httpContext));
-                vnpay.AddRequestData("vnp_create_date", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                vnpay.AddRequestData("vnp_create_date", DateTime.UtcNow.AddHours(7).ToString("yyyyMMddHHmmss"));
                 vnpay.AddRequestData("vnp_store_token", "1");
                 vnpay.AddRequestData("vnp_locale", _configuration["VnPay:Locale"]);
                 return vnpay.CreateRequestUrlToken(_configuration["VnPay:BaseUrlCreatenPayToken"], _configuration["VnPay:HashSecret"]);
@@ -216,7 +216,7 @@ namespace BookStore.Application.Services
             vnpay.AddRequestData("vnp_txn_desc", orderInfo);
             vnpay.AddRequestData("vnp_return_url", _configuration["VnPay:PaymentBackReturnUrl"]);
             vnpay.AddRequestData("vnp_ip_addr", Utils.GetIpAddress(httpContext));
-            vnpay.AddRequestData("vnp_create_date", DateTime.Now.ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_create_date", DateTime.UtcNow.AddHours(7).ToString("yyyyMMddHHmmss"));
             vnpay.AddRequestData("vnp_locale", _configuration["VnPay:Locale"]);
             return vnpay.CreateRequestUrlToken(_configuration["VnPay:BaseUrlPayToken"], _configuration["VnPay:HashSecret"]);
             
