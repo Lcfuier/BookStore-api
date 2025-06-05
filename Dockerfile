@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Copy solution và project files vào container
 COPY BookStore.sln .
-COPY BookStore.API/BookStore.Api.csproj BookStore.Api/
+COPY BookStore.Api/BookStore.Api.csproj BookStore.Api/
 COPY BookStore.Application/BookStore.Application.csproj BookStore.Application/
 COPY BookStore.Domain/BookStore.Domain.csproj BookStore.Domain/
 COPY BookStore.Infrastructure/BookStore.Infrastructure.csproj BookStore.Infrastructure/
@@ -29,4 +29,4 @@ COPY --from=build /app/publish .
 EXPOSE 8080
 
 # Chạy ứng dụng
-ENTRYPOINT ["dotnet", "BookStore.API.dll"]
+ENTRYPOINT ["dotnet", "BookStore.Api.dll"]
