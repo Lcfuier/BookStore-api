@@ -50,27 +50,33 @@ namespace BookStore.Domain.Constants.VnPay
 
         public string CreateRequestUrl(string baseUrl, string vnp_HashSecret)
         {
-            StringBuilder data = new StringBuilder();
-            foreach (KeyValuePair<string, string> kv in _requestData)
+            // 1. Sắp xếp các tham số theo key
+            var sortedParams = _requestData
+                .Where(kv => !string.IsNullOrEmpty(kv.Value))
+                .OrderBy(kv => kv.Key);
+
+            // 2. Tạo chuỗi tham số query, chưa encode giá trị khi tạo chuỗi ký hash
+            // Lưu ý: theo tài liệu VNPay, khi tạo hash thì phải dùng chuỗi "key=value" chưa encode giá trị, chỉ encode khi tạo URL
+            StringBuilder hashData = new StringBuilder();
+            StringBuilder queryData = new StringBuilder();
+
+            foreach (var kv in sortedParams)
             {
-                if (!String.IsNullOrEmpty(kv.Value))
-                {
-                    data.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
-                }
+                hashData.Append($"{kv.Key}={kv.Value}&");
+                queryData.Append($"{WebUtility.UrlEncode(kv.Key)}={WebUtility.UrlEncode(kv.Value)}&");
             }
-            string queryString = data.ToString();
 
-            baseUrl += "?" + queryString;
-            String signData = queryString;
-            if (signData.Length > 0)
-            {
+            // 3. Bỏ dấu & cuối cùng
+            if (hashData.Length > 0) hashData.Length--;
+            if (queryData.Length > 0) queryData.Length--;
 
-                signData = signData.Remove(data.Length - 1, 1);
-            }
-            string vnp_SecureHash = Utils.HmacSHA512(vnp_HashSecret, signData);
-            baseUrl += "vnp_SecureHash=" + vnp_SecureHash;
+            // 4. Tạo hash
+            string vnp_SecureHash = Utils.HmacSHA512(vnp_HashSecret, hashData.ToString());
 
-            return baseUrl;
+            // 5. Tạo URL hoàn chỉnh
+            string url = $"{baseUrl}?{queryData}&vnp_SecureHash={vnp_SecureHash}";
+
+            return url;
         }
 
         public string CreateRequestUrlToken(string baseUrl, string vnp_HashSecret)

@@ -35,10 +35,10 @@ namespace BookStore.Application.Services
             var tick = DateTime.Now.Ticks.ToString();
             var vnpay = new VnPayLibrary();
 
-            
-            if (request.StoreCard==true)
+
+            if (request.StoreCard == true)
             {
-                string txnDesc = $"{userName}";
+                string txnDesc = $"{request.OrderId}|{userName}|{nickName}|SaveToken";
                 vnpay.AddRequestData("vnp_version", _configuration["VnPay:Version"]);
                 vnpay.AddRequestData("vnp_command", "pay_and_create");
                 vnpay.AddRequestData("vnp_tmn_code", _configuration["VnPay:TmnCode"]);
