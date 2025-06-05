@@ -75,28 +75,34 @@ namespace BookStore.Domain.Constants.VnPay
 
         public string CreateRequestUrlToken(string baseUrl, string vnp_HashSecret)
         {
+            // Bước 1: Sắp xếp tham số theo key (tên tham số)
+            var sortedParams = _requestData
+                .Where(kv => !string.IsNullOrEmpty(kv.Value))
+                .OrderBy(kv => kv.Key, StringComparer.Ordinal);
+
+            // Bước 2: Tạo query string (đã encode)
             StringBuilder data = new StringBuilder();
-            foreach (KeyValuePair<string, string> kv in _requestData)
+            foreach (var kv in sortedParams)
             {
-                if (!String.IsNullOrEmpty(kv.Value))
-                {
-                    data.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
-                }
+                data.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
             }
-            string queryString = data.ToString();
 
-            baseUrl += "?" + queryString;
-            String signData = queryString;
-            if (signData.Length > 0)
-            {
+            // Bước 3: Xóa dấu & cuối cùng
+            string queryString = data.ToString().TrimEnd('&');
 
-                signData = signData.Remove(data.Length - 1, 1);
-            }
+            // Bước 4: Tạo chữ ký dựa trên queryString chưa encode (hoặc encode tùy yêu cầu VNPay)
+            // VNPay yêu cầu dùng chuỗi queryString chưa encode để tạo chữ ký, nếu không có tài liệu rõ ràng thì cứ giữ nguyên
+            string signData = queryString;
+
+            // Bước 5: Tạo chữ ký HMAC SHA512
             string vnp_SecureHash = Utils.HmacSHA512(vnp_HashSecret, signData);
-            baseUrl += "vnp_secure_hash=" + vnp_SecureHash;
 
-            return baseUrl;
+            // Bước 6: Tạo URL hoàn chỉnh (thêm chữ ký)
+            string url = baseUrl + "?" + queryString + "&vnp_secure_hash=" + vnp_SecureHash;
+
+            return url;
         }
+
 
         #endregion
 
