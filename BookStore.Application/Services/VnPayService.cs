@@ -38,7 +38,7 @@ namespace BookStore.Application.Services
             
             if (request.StoreCard==true)
             {
-                string txnDesc = $"{request.OrderId}|{userName}|{nickName}|SaveToken";
+                string txnDesc = $"{userName}";
                 vnpay.AddRequestData("vnp_version", _configuration["VnPay:Version"]);
                 vnpay.AddRequestData("vnp_command", "pay_and_create");
                 vnpay.AddRequestData("vnp_tmn_code", _configuration["VnPay:TmnCode"]);
