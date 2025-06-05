@@ -78,40 +78,41 @@ namespace BookStore.Application.Services
         public async Task<VnPayResponeModel> PaymentExecuteAsync(IQueryCollection collection)
         {
             var vnpay = new VnPayLibrary();
-
-            // Thêm các key bắt đầu bằng "vnp_"
             foreach (var (key, value) in collection)
             {
-                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
                 {
                     vnpay.AddResponseData(key, value.ToString());
                 }
             }
-
-            var secureHash = collection
-                .FirstOrDefault(p => string.Equals(p.Key, "vnp_secure_hash", StringComparison.OrdinalIgnoreCase))
-                .Value;
-
-            if (!vnpay.ValidateSignature(secureHash, _configuration["VnPay:HashSecret"]))
-            {
-                return new VnPayResponeModel { IsSuccess = false };
-            }
-
-            // Dữ liệu trả về chung
             var storeCard = vnpay.GetResponseData("vnp_token");
-            var txnRef = vnpay.GetResponseData("vnp_txn_ref");
-            var transactionId = vnpay.GetResponseData("vnp_transaction_no");
-            var responseCode = vnpay.GetResponseData("vnp_response_code");
-            var paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
-
             string orderId = "";
-            string userName = "";
             string nickname = "";
+            string userName = "";
+            var responseCode = "";
+            var transactionId = "";
+            var orderInfoRaw = "";
+            var txnRef = "";
+            var cardToken = "";
+            var paymentStatus = "";
+            var secureHash = "";
             string saveToken = "";
-
             if (!string.IsNullOrEmpty(storeCard))
             {
-                // Lấy thông tin từ vnp_txn_desc theo format: OrderId|UserName|NickName|SaveToken
+                secureHash = collection.FirstOrDefault(p => p.Key == "vnp_secure_hash").Value;
+                var checkSignature = vnpay.ValidateSignature(secureHash, _configuration["VnPay:HashSecret"]);
+                if (!checkSignature)
+                {
+                    return new VnPayResponeModel { IsSuccess = false };
+                }
+                responseCode = vnpay.GetResponseData("vnp_response_code");
+                transactionId = vnpay.GetResponseData("vnp_transaction_no");
+                orderInfoRaw = vnpay.GetResponseData("vnp_txn_desc");
+                txnRef = vnpay.GetResponseData("vnp_txn_ref");
+                cardToken = vnpay.GetResponseData("vnp_token");
+                paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
+
+
                 var rawDesc = vnpay.GetResponseData("vnp_txn_desc");
 
                 if (!string.IsNullOrEmpty(rawDesc) && rawDesc.Contains("|"))
@@ -122,33 +123,42 @@ namespace BookStore.Application.Services
                     nickname = parts.ElementAtOrDefault(2);
                     saveToken = parts.ElementAtOrDefault(3);
                 }
-
-                if (!string.IsNullOrEmpty(userName) && saveToken?.Equals("SaveToken", StringComparison.OrdinalIgnoreCase) == true)
+                var existing = await _userManager.FindByNameAsync(userName);
+                if (existing != null && saveToken.Equals("SaveToken"))
                 {
-                    var existingUser = await _userManager.FindByNameAsync(userName);
-                    if (existingUser != null)
+                    _data.PaymentProfile.Add(new PaymentProfile
                     {
-                        _data.PaymentProfile.Add(new PaymentProfile
-                        {
-                            User = existingUser,
-                            Token = storeCard,
-                            CreatedTime = DateTime.UtcNow,
-                            Nickname = nickname,
-                            CreatedBy = userName,
-                        });
-                        await _data.SaveAsync();
-                    }
+                        User = existing,
+                        Token = cardToken,
+                        CreatedTime = DateTime.UtcNow,
+                        Nickname = nickname,
+                        CreatedBy = userName,
+                    });
+                    await _data.SaveAsync();
                 }
             }
             else
             {
-                // Thanh toán không lưu thẻ
-                var orderInfoRaw = vnpay.GetResponseData("vnp_order_info");
-                if (!string.IsNullOrEmpty(orderInfoRaw) && orderInfoRaw.Contains("|"))
+                secureHash = collection.FirstOrDefault(p => p.Key == "vnp_SecureHash").Value;
+                var checkSignature = vnpay.ValidateSignature(secureHash, _configuration["VnPay:HashSecret"]);
+                if (!checkSignature)
                 {
-                    var parts = orderInfoRaw.Split('|');
+                    return new VnPayResponeModel { IsSuccess = false };
+                }
+                responseCode = vnpay.GetResponseData("vnp_ResponseCode");
+                transactionId = vnpay.GetResponseData("vnp_TransactionNo");
+                orderInfoRaw = vnpay.GetResponseData("vnp_OrderInfo");
+                txnRef = vnpay.GetResponseData("vnp_TxnRef");
+                paymentStatus = vnpay.GetResponseData("vnp_TransactionStatus");
+                var rawDesc = orderInfoRaw;
+
+                if (!string.IsNullOrEmpty(rawDesc) && rawDesc.Contains("|"))
+                {
+                    var parts = rawDesc.Split('|');
                     orderId = parts.ElementAtOrDefault(0);
                     userName = parts.ElementAtOrDefault(1);
+                    nickname = parts.ElementAtOrDefault(2);
+                    saveToken = parts.ElementAtOrDefault(3);
                 }
             }
 
@@ -193,15 +203,7 @@ namespace BookStore.Application.Services
                 throw new Exception("No saved token found for user.");
             }
             var tick = DateTime.Now.Ticks.ToString();
-            var orderInfo = new
-            {
-                OrderId = req.OrderId,
-                UserName = userName,
-                NickName = nickName,
-                SaveToken = "false"
-            };
-            var json = JsonSerializer.Serialize(orderInfo);
-            var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+            var orderInfo =  $"{req.OrderId}|{userName}|{nickName}|false";
             var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_version", _configuration["VnPay:Version"]);
             vnpay.AddRequestData("vnp_command", "token_pay");
@@ -211,7 +213,7 @@ namespace BookStore.Application.Services
             vnpay.AddRequestData("vnp_token", paymentProfile.Token);
             vnpay.AddRequestData("vnp_amount", ((int)(req.Amount * 100)).ToString());
             vnpay.AddRequestData("vnp_curr_code", _configuration["VnPay:CurrCode"]);
-            vnpay.AddRequestData("vnp_txn_desc", base64);
+            vnpay.AddRequestData("vnp_txn_desc", orderInfo);
             vnpay.AddRequestData("vnp_return_url", _configuration["VnPay:PaymentBackReturnUrl"]);
             vnpay.AddRequestData("vnp_ip_addr", Utils.GetIpAddress(httpContext));
             vnpay.AddRequestData("vnp_create_date", DateTime.Now.ToString("yyyyMMddHHmmss"));
