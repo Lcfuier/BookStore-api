@@ -166,45 +166,27 @@ namespace BookStore.Domain.Constants.VnPay
         {
             try
             {
-                // Ưu tiên lấy từ X-Forwarded-For (do proxy hoặc load balancer set)
-                var xForwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-                if (!string.IsNullOrEmpty(xForwardedFor))
+                var ip = context.Connection?.RemoteIpAddress;
+
+                if (ip == null)
+                    return "127.0.0.1";
+
+                if (ip.IsIPv4MappedToIPv6)
                 {
-                    var ip = xForwardedFor.Split(',').FirstOrDefault()?.Trim();
-                    if (!string.IsNullOrEmpty(ip) && !IsLocalIp(ip))
-                    {
-                        return ip;
-                    }
+                    ip = ip.MapToIPv4();
                 }
 
-                // Lấy từ connection nếu không có header
-                var remoteIpAddress = context.Connection.RemoteIpAddress;
-                if (remoteIpAddress != null)
+                if (IPAddress.IsLoopback(ip) || ip.ToString() == "::1")
                 {
-                    if (remoteIpAddress.IsIPv4MappedToIPv6)
-                    {
-                        remoteIpAddress = remoteIpAddress.MapToIPv4();
-                    }
-
-                    var ip = remoteIpAddress.ToString();
-                    if (!IsLocalIp(ip))
-                    {
-                        return ip;
-                    }
+                    return "127.0.0.1";
                 }
+
+                return ip.ToString();
             }
-            catch (Exception ex)
+            catch
             {
-                return "Invalid IP: " + ex.Message;
+                return "127.0.0.1"; // fallback IP để tránh lỗi format
             }
-
-            // Fallback nếu chỉ chạy local: vẫn để IP hợp lệ nhưng an toàn (VNPay đôi khi chấp nhận 0.0.0.0 hơn là 127.0.0.1)
-            return "0.0.0.0";
-        }
-
-        private static bool IsLocalIp(string ip)
-        {
-            return ip.StartsWith("127.") || ip == "::1" || ip == "0.0.0.1";
         }
 
 
