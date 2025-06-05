@@ -6,7 +6,6 @@ using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
 using BookStore.Infrastructure.Interface;
-using BookStore.Infrastructure.Migrations;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
