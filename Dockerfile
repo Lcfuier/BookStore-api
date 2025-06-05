@@ -1,32 +1,41 @@
-﻿# Stage 1: Build
+﻿# ----------------------------------
+# Build stage
+# ----------------------------------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution và project files vào container
-COPY BookStore.sln .
-COPY BookStore.Api/BookStore.Api.csproj BookStore.Api/
-COPY BookStore.Application/BookStore.Application.csproj BookStore.Application/
-COPY BookStore.Domain/BookStore.Domain.csproj BookStore.Domain/
-COPY BookStore.Infrastructure/BookStore.Infrastructure.csproj BookStore.Infrastructure/
+# Copy solution and csproj files
+COPY ["BookStore.BLL.sln", "./"]
+COPY ["BookStore.Api/BookStore.Api.csproj", "BookStore.Api/"]
+COPY ["BookStore.Application/BookStore.Application.csproj", "BookStore.Application/"]
+COPY ["BookStore.Domain/BookStore.Domain.csproj", "BookStore.Domain/"]
+COPY ["BookStore.Infrastructure/BookStore.Infrastructure.csproj", "BookStore.Infrastructure/"]
 
-# Restore các package nuget
-RUN dotnet restore
+# Restore dependencies
+RUN dotnet restore "BookStore.BLL.sln"
 
-# Copy toàn bộ source code
+# Copy rest of the code
 COPY . .
 
-# Build và publish project API
-RUN dotnet publish BookStore.API/BookStore.Api.csproj -c Release -o /app/publish
+# Build
+WORKDIR "/src/BookStore.Api"
+RUN dotnet build "BookStore.Api.csproj" -c Release -o /app/build
 
-# Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# ----------------------------------
+# Publish stage
+# ----------------------------------
+FROM build AS publish
+RUN dotnet publish "BookStore.Api.csproj" -c Release -o /app/publish
+
+# ----------------------------------
+# Runtime stage
+# ----------------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+COPY --from=publish /app/publish .
 
-# Copy thư mục publish từ stage build
-COPY --from=build /app/publish .
+# Expose default ASP.NET port
+EXPOSE 80
+EXPOSE 443
 
-# Mở port 8080 cho Render
-EXPOSE 8080
-
-# Chạy ứng dụng
 ENTRYPOINT ["dotnet", "BookStore.Api.dll"]
