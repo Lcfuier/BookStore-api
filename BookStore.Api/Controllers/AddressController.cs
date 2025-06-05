@@ -210,6 +210,21 @@ namespace BookStore.Api.Controllers
             }
         }
 
+        [HttpGet("GetZaloPhone")]
+        public async Task<IActionResult> GetZaloPhone()
+        {
+            try
+            {
+                string phoneNumber = _configuration["Zalo:Number"];
+                
+
+                return Ok(phoneNumber);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
+            }
+        }
 
     }
 
