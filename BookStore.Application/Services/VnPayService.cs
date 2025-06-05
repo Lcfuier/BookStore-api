@@ -38,18 +38,7 @@ namespace BookStore.Application.Services
             
             if (request.StoreCard==true)
             {
-                var orderInfo = new
-                {
-                    OrderId = request.OrderId,
-                    UserName = userName,
-                    NickName = nickName,
-                    SaveToken="true"
-                };
-                var json = JsonSerializer.Serialize(orderInfo);
-                var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json))
-        .Replace('+', '-')
-        .Replace('/', '_')
-        .TrimEnd('=');
+                string txnDesc = $"{request.OrderId}|{userName}|{nickName}|SaveToken";
                 vnpay.AddRequestData("vnp_version", _configuration["VnPay:Version"]);
                 vnpay.AddRequestData("vnp_command", "pay_and_create");
                 vnpay.AddRequestData("vnp_tmn_code", _configuration["VnPay:TmnCode"]);
@@ -58,7 +47,7 @@ namespace BookStore.Application.Services
                 vnpay.AddRequestData("vnp_txn_ref", tick);
                 vnpay.AddRequestData("vnp_amount", ((int)(request.Amount * 100)).ToString());
                 vnpay.AddRequestData("vnp_curr_code", _configuration["VnPay:CurrCode"]);
-                vnpay.AddRequestData("vnp_txn_desc", base64);
+                vnpay.AddRequestData("vnp_txn_desc", txnDesc);
                 vnpay.AddRequestData("vnp_return_url", _configuration["VnPay:PaymentBackReturnUrl"]);
                 vnpay.AddRequestData("vnp_ip_addr", Utils.GetIpAddress(httpContext));
                 vnpay.AddRequestData("vnp_create_date", DateTime.Now.ToString("yyyyMMddHHmmss"));
@@ -90,7 +79,7 @@ namespace BookStore.Application.Services
         {
             var vnpay = new VnPayLibrary();
 
-            // Thêm tất cả key bắt đầu bằng "vnp_" vào vnpay response data
+            // Thêm các key bắt đầu bằng "vnp_"
             foreach (var (key, value) in collection)
             {
                 if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_", StringComparison.OrdinalIgnoreCase))
@@ -99,71 +88,50 @@ namespace BookStore.Application.Services
                 }
             }
 
-            // Lấy token nếu có (trường hợp lưu thẻ)
-            var storeCard = vnpay.GetResponseData("vnp_token");
+            var secureHash = collection
+                .FirstOrDefault(p => string.Equals(p.Key, "vnp_secure_hash", StringComparison.OrdinalIgnoreCase))
+                .Value;
 
-            // Khai báo các biến để dùng chung
-            string orderId = "";
-            string nickname = "";
-            string userName = "";
-            string responseCode = "";
-            string transactionId = "";
-            string orderInfoRaw = "";
-            string txnRef = "";
-            string cardToken = "";
-            string paymentStatus = "";
-            string secureHash = "";
-            string saveToken = "";
-
-            // Lấy giá trị secureHash trong query collection (key thường là vnp_secure_hash, không phân biệt hoa thường)
-            secureHash = collection.FirstOrDefault(p =>
-                string.Equals(p.Key, "vnp_secure_hash", StringComparison.OrdinalIgnoreCase)).Value;
-
-            // Validate chữ ký
-            bool checkSignature = vnpay.ValidateSignature(secureHash, _configuration["VnPay:HashSecret"]);
-            if (!checkSignature)
+            if (!vnpay.ValidateSignature(secureHash, _configuration["VnPay:HashSecret"]))
             {
                 return new VnPayResponeModel { IsSuccess = false };
             }
 
+            // Dữ liệu trả về chung
+            var storeCard = vnpay.GetResponseData("vnp_token");
+            var txnRef = vnpay.GetResponseData("vnp_txn_ref");
+            var transactionId = vnpay.GetResponseData("vnp_transaction_no");
+            var responseCode = vnpay.GetResponseData("vnp_response_code");
+            var paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
+
+            string orderId = "";
+            string userName = "";
+            string nickname = "";
+            string saveToken = "";
+
             if (!string.IsNullOrEmpty(storeCard))
             {
-                // Xử lý trường hợp có lưu thẻ
-                responseCode = vnpay.GetResponseData("vnp_response_code");
-                transactionId = vnpay.GetResponseData("vnp_transaction_no");
-                orderInfoRaw = vnpay.GetResponseData("vnp_txn_desc");
-                txnRef = vnpay.GetResponseData("vnp_txn_ref");
-                cardToken = vnpay.GetResponseData("vnp_token");
-                paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
+                // Lấy thông tin từ vnp_txn_desc theo format: OrderId|UserName|NickName|SaveToken
+                var rawDesc = vnpay.GetResponseData("vnp_txn_desc");
 
-                // Giải mã base64 (có thể là chuẩn base64 hoặc base64url)
-                string decoded = null;
-                try
+                if (!string.IsNullOrEmpty(rawDesc) && rawDesc.Contains("|"))
                 {
-                    decoded = DecodeBase64UrlSafe(orderInfoRaw);
-                }
-                catch
-                {
-                    // fallback decode base64 chuẩn
-                    decoded = Encoding.UTF8.GetString(Convert.FromBase64String(orderInfoRaw));
+                    var parts = rawDesc.Split('|');
+                    orderId = parts.ElementAtOrDefault(0);
+                    userName = parts.ElementAtOrDefault(1);
+                    nickname = parts.ElementAtOrDefault(2);
+                    saveToken = parts.ElementAtOrDefault(3);
                 }
 
-                var orderInfoObj = JsonSerializer.Deserialize<OrderInfoVnpay>(decoded);
-
-                orderId = orderInfoObj?.OrderId ?? "";
-                userName = orderInfoObj?.UserName ?? "";
-                nickname = orderInfoObj?.NickName ?? "";
-                saveToken = orderInfoObj?.SaveToken ?? "";
-
-                if (!string.IsNullOrEmpty(userName) && saveToken.Equals("true", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(userName) && saveToken?.Equals("SaveToken", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    var existing = await _userManager.FindByNameAsync(userName);
-                    if (existing != null)
+                    var existingUser = await _userManager.FindByNameAsync(userName);
+                    if (existingUser != null)
                     {
                         _data.PaymentProfile.Add(new PaymentProfile
                         {
-                            User = existing,
-                            Token = cardToken,
+                            User = existingUser,
+                            Token = storeCard,
                             CreatedTime = DateTime.UtcNow,
                             Nickname = nickname,
                             CreatedBy = userName,
@@ -174,18 +142,13 @@ namespace BookStore.Application.Services
             }
             else
             {
-                // Xử lý trường hợp không lưu thẻ
-                responseCode = vnpay.GetResponseData("vnp_response_code");
-                transactionId = vnpay.GetResponseData("vnp_transaction_no");
-                orderInfoRaw = vnpay.GetResponseData("vnp_order_info");
-                txnRef = vnpay.GetResponseData("vnp_txn_ref");
-                paymentStatus = vnpay.GetResponseData("vnp_transaction_status");
-
+                // Thanh toán không lưu thẻ
+                var orderInfoRaw = vnpay.GetResponseData("vnp_order_info");
                 if (!string.IsNullOrEmpty(orderInfoRaw) && orderInfoRaw.Contains("|"))
                 {
                     var parts = orderInfoRaw.Split('|');
-                    orderId = parts[0];
-                    userName = parts.Length > 1 ? parts[1] : "";
+                    orderId = parts.ElementAtOrDefault(0);
+                    userName = parts.ElementAtOrDefault(1);
                 }
             }
 
@@ -202,6 +165,7 @@ namespace BookStore.Application.Services
                 paymentStatus = paymentStatus,
             };
         }
+
 
         // Hàm decode base64 url-safe (thay thế - và _ và thêm padding)
         private string DecodeBase64UrlSafe(string base64Url)
