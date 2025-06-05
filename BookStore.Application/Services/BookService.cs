@@ -282,6 +282,7 @@ namespace BookStore.Application.Services
             book.Isbn13 =bookDto.Isbn13;
             book.DiscountPercent=bookDto.DiscountPercent;
             book.Price=bookDto.Price;
+            book.Inventory=bookDto.Inventory;
             book.NumberOfPage=bookDto.NumberOfPage;
             book.authorId=bookDto.authorId;
             book.publisherID=bookDto.publisherID;

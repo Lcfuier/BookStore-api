@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{21BFC767-0AA9-4A4D-8593-A48AF5A64C1D}|BookStore.Domain\\BookStore.Domain.csproj|d:\\workspace\\bookstore\\bookstore.bll\\bookstore.domain\\constants\\vnpay\\vnpaylibrary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{21BFC767-0AA9-4A4D-8593-A48AF5A64C1D}|BookStore.Domain\\BookStore.Domain.csproj|solutionrelative:bookstore.domain\\constants\\vnpay\\vnpaylibrary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C9DAA283-CE08-4C68-9D63-46B469380F27}|BookStore.Application\\BookStore.Application.csproj|d:\\workspace\\bookstore\\bookstore.bll\\bookstore.application\\services\\vnpayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C9DAA283-CE08-4C68-9D63-46B469380F27}|BookStore.Application\\BookStore.Application.csproj|solutionrelative:bookstore.application\\services\\vnpayservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C9DAA283-CE08-4C68-9D63-46B469380F27}|BookStore.Application\\BookStore.Application.csproj|d:\\workspace\\bookstore\\bookstore.bll\\bookstore.application\\services\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C9DAA283-CE08-4C68-9D63-46B469380F27}|BookStore.Application\\BookStore.Application.csproj|solutionrelative:bookstore.application\\services\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AB5FAC74-C319-4049-98CA-A0F4B0CAB1DB}|BookStore.Api\\BookStore.Api.csproj|d:\\workspace\\bookstore\\bookstore.bll\\bookstore.api\\controllers\\bookcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AB5FAC74-C319-4049-98CA-A0F4B0CAB1DB}|BookStore.Api\\BookStore.Api.csproj|solutionrelative:bookstore.api\\controllers\\bookcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21BFC767-0AA9-4A4D-8593-A48AF5A64C1D}|BookStore.Domain\\BookStore.Domain.csproj|d:\\workspace\\bookstore\\bookstore.bll\\bookstore.domain\\constants\\vnpay\\vnpaylibrary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{21BFC767-0AA9-4A4D-8593-A48AF5A64C1D}|BookStore.Domain\\BookStore.Domain.csproj|solutionrelative:bookstore.domain\\constants\\vnpay\\vnpaylibrary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,26 +54,52 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
+              "Title": "BookService.cs",
+              "DocumentMoniker": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\Services\\BookService.cs",
+              "RelativeDocumentMoniker": "BookStore.Application\\Services\\BookService.cs",
+              "ToolTip": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\Services\\BookService.cs",
+              "RelativeToolTip": "BookStore.Application\\Services\\BookService.cs",
+              "ViewState": "AQIAAAkBAAAAAAAAAAAwwBwBAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-05T05:30:18.851Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BookController.cs",
+              "DocumentMoniker": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\Controllers\\BookController.cs",
+              "RelativeDocumentMoniker": "BookStore.Api\\Controllers\\BookController.cs",
+              "ToolTip": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api\\Controllers\\BookController.cs",
+              "RelativeToolTip": "BookStore.Api\\Controllers\\BookController.cs",
+              "ViewState": "AQIAADwAAAAAAAAAAAAowEAAAABMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-05T05:30:01.537Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "VnPayLibrary.cs",
               "DocumentMoniker": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\Constants\\VnPay\\VnPayLibrary.cs",
               "RelativeDocumentMoniker": "BookStore.Domain\\Constants\\VnPay\\VnPayLibrary.cs",
               "ToolTip": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\Constants\\VnPay\\VnPayLibrary.cs",
               "RelativeToolTip": "BookStore.Domain\\Constants\\VnPay\\VnPayLibrary.cs",
-              "ViewState": "AQIAAKkAAAAAAAAAAAAwwL4AAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAdAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-05T05:14:59.83Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "VnPayService.cs",
               "DocumentMoniker": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\Services\\VnPayService.cs",
               "RelativeDocumentMoniker": "BookStore.Application\\Services\\VnPayService.cs",
               "ToolTip": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\Services\\VnPayService.cs",
               "RelativeToolTip": "BookStore.Application\\Services\\VnPayService.cs",
-              "ViewState": "AQIAAC0AAAAAAAAAAAAYwDsAAABGAAAA",
+              "ViewState": "AQIAADIAAAAAAAAAAAAIwCsAAAAoAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-05T05:14:56.301Z",
               "EditorCaption": ""
