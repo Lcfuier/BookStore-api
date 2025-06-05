@@ -170,7 +170,7 @@ namespace BookStore.Application.Services
             }
             order.ShippingCost = req.ShippingCost.ToString();
             order.Total = amount + (decimal)req.ShippingCost;
-            if (!req.PaymentMethod.Equals(PaymentMethod.PaymentMethodCash))
+            if (req.PaymentMethod.ToLower().Equals(PaymentMethod.PaymentMethodCash.ToLower()))
             {
                 order.PaymentStatus = PaymentStatus.PaymentStatusCash;
                 order.OrderStatus = OrderStatus.StatusApproved;
