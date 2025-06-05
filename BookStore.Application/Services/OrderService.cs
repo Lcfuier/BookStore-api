@@ -177,9 +177,10 @@ namespace BookStore.Application.Services
             }
             else
             {
-                order.PaymentMethod = req.PaymentMethod;
+                
                 order.PaymentStatus = PaymentStatus.PaymentStatusPending;
             }
+            order.PaymentMethod = req.PaymentMethod;
             order.OrderCode = GenerateOrderCode();
             await AddOrderAsync(order);
             result.Success = true;
