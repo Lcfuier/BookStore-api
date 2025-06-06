@@ -1,4 +1,5 @@
-﻿using BookStore.Domain.DTOs;
+﻿using BookStore.Application.Interface;
+using BookStore.Domain.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -11,10 +12,13 @@ namespace BookStore.Api.Controllers
         private readonly HttpClient _httpClient;
         private const string GhnApiUrl = "https://api.giaohangnhanh.vn"; // GHN API base URL
         private readonly IConfiguration _configuration;
-        public AddressController(HttpClient httpClient, IConfiguration configuration)
+        private readonly IGhnService _ghnService;
+
+        public AddressController(HttpClient httpClient, IConfiguration configuration, IGhnService ghnService)
         {
             _httpClient = httpClient;
             _configuration=configuration;
+            _ghnService = ghnService;
         }
 
         // API lấy danh sách tỉnh thành
@@ -163,50 +167,12 @@ namespace BookStore.Api.Controllers
         {
             try
             {
-                string urlBase = _configuration["Ghn:Url"];
-                string apiKey = _configuration["Ghn:Apikey"];
-                string shopId = _configuration["Ghn:ShopId"];
-                var apiUrl = $"{urlBase}/shiip/public-api/v2/shipping-order/fee";
-
-                // Dữ liệu gửi lên GHN
-                var requestBody = new
-                {
-                    from_district_id = 2023,
-                    from_ward_code= "371110",
-                    service_type_id = 2, // Giao hàng loại nhỏ
-                    to_district_id = requestModel.ToDistrictId,
-                    to_ward_code = requestModel.ToWardCode,
-                    weight = requestModel.Weight,
-                    length = requestModel.Length,
-                    width = requestModel.Width,
-                    height = requestModel.Height
-                };
-
-                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
-                request.Headers.Add("Token", apiKey);
-                request.Headers.Add("ShopId", shopId);
-                request.Content = new StringContent(JsonConvert.SerializeObject(requestBody), System.Text.Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return BadRequest($"GHN API lỗi: {content}");
-                }
-
-                var result = JsonConvert.DeserializeObject<dynamic>(content);
-                if ((int?)result?.code != 200)
-                {
-                    return BadRequest($"GHN API trả lỗi: {result?.message ?? "Không rõ lỗi"}");
-                }
-
-                int fee = result.data.total;
+                var fee = await _ghnService.CalculateShippingFeeAsync(requestModel);
                 return Ok(fee);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Lỗi tính phí vận chuyển: {ex.Message}");
+                return StatusCode(500, ex.Message);
             }
         }
 

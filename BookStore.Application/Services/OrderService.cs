@@ -26,11 +26,13 @@ namespace BookStore.Application.Services
         private readonly IUnitOfWork _data;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
-        public OrderService(IUnitOfWork data, UserManager<ApplicationUser> userManager,IMapper mapper)
+        private readonly IGhnService _ghnService;
+        public OrderService(IUnitOfWork data, UserManager<ApplicationUser> userManager,IMapper mapper, IGhnService ghnService)
         {
             _data = data;
             _userManager = userManager;
-            _mapper= mapper;    
+            _mapper= mapper;  
+            _ghnService= ghnService;
         }
         private async Task AddOrderAsync(Order order)
         {
@@ -168,8 +170,8 @@ namespace BookStore.Application.Services
                 _data.Book.Update(book);
                 _data.CartItem.Remove(detail);
             }
-            order.ShippingCost = req.ShippingCost.ToString();
-            order.Total = amount + (decimal)req.ShippingCost;
+            order.ShippingCost = (await _ghnService.CalculateShippingFeeAsync(req.shippingFeeRequest)).ToString();
+            order.Total = amount + Decimal.Parse(order.ShippingCost);
             if (req.PaymentMethod.ToLower()==PaymentMethod.PaymentMethodCash.ToLower())
             {
                 order.PaymentStatus = PaymentStatus.PaymentStatusCash;
