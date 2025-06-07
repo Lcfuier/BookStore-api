@@ -27,12 +27,14 @@ namespace BookStore.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IGhnService _ghnService;
-        public OrderService(IUnitOfWork data, UserManager<ApplicationUser> userManager,IMapper mapper, IGhnService ghnService)
+        private readonly IEncryptionService _encryptionService;
+        public OrderService(IUnitOfWork data, UserManager<ApplicationUser> userManager,IMapper mapper, IGhnService ghnService, IEncryptionService encryptionService)
         {
             _data = data;
             _userManager = userManager;
             _mapper= mapper;  
             _ghnService= ghnService;
+            _encryptionService= encryptionService;
         }
         private async Task AddOrderAsync(Order order)
         {
@@ -130,16 +132,16 @@ namespace BookStore.Application.Services
             }
             Order order=new Order();
             order.User= user;
-            order.Address= req.Address;
-            order.Ward= req.Ward;
+            order.Address= _encryptionService.Encrypt(req.Address);
+            order.Ward= _encryptionService.Encrypt(req.Ward);
             order.OrderId = new Guid();
             order.OrderStatus = OrderStatus.StatusPending;
-            order.District = req.District;
-            order.City = req.City;
+            order.District = _encryptionService.Encrypt(req.District);
+            order.City = _encryptionService.Encrypt(req.Address);
             order.CreatedBy=user.UserName;
             order.CreatedTime= DateTime.UtcNow;
-            order.PhoneNumber= req.PhoneNumber;
-            order.FullName=req.FullName;
+            order.PhoneNumber= _encryptionService.Encrypt(req.PhoneNumber);
+            order.FullName= _encryptionService.Encrypt(req.FullName);
             order.OrderDetails = new List<OrderItem>();
             decimal amount = 0;
             foreach(var item in req.Details)

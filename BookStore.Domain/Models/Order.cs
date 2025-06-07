@@ -22,19 +22,14 @@ namespace BookStore.Domain.Models
         [Unicode(false)]
         public string? TransactionId { get; set; }
 
-        [StringLength(128)]
         public string? Address { get; set; }
 
-        [StringLength(50)]
         public string? Ward { get; set; }
 
-        [StringLength(30)]
         public string? District { get; set; }
-        [StringLength(11)]
         public string? PhoneNumber { get; set; }
         public string? FullName { get; set; }
 
-        [StringLength(30)]
         public string? City { get; set; }
         [BindNever]
         public ICollection<OrderItem>? OrderDetails { get; set; }

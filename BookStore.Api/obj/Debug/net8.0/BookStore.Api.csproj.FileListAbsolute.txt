@@ -296,3 +296,4 @@ D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\obj\Debug\net8.0\refint\BookS
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\obj\Debug\net8.0\BookStore.Api.pdb
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\obj\Debug\net8.0\BookStore.Api.genruntimeconfig.cache
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\obj\Debug\net8.0\ref\BookStore.Api.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\AspNetCoreRateLimit.dll

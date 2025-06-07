@@ -1,5 +1,9 @@
+﻿using AspNetCoreRateLimit;
+using AutoMapper;
 using BookStore.Api.Controllers;
 using BookStore.Api.Extensions;
+using BookStore.Application.AutoMapper;
+using BookStore.Application.Interface;
 using BookStore.Domain.Constants;
 using BookStore.Domain.Models;
 using BookStore.Infrastructure.Data;
@@ -40,7 +44,19 @@ builder.Services.AddRouting(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(
 c => c.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<MappingProfile>();
+builder.Services.AddSingleton(provider =>
+{
+    var encryptionService = provider.GetRequiredService<IEncryptionService>();
+    var profile = new MappingProfile(encryptionService);
+
+    var config = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile(profile);
+    });
+
+    return config.CreateMapper();
+});
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -60,6 +76,13 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<AddressController>();
 // Register GoogleDriveUploader
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddLifetimeServices(builder.Configuration);
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
@@ -82,6 +105,7 @@ app.UseCors(options =>
     options.AllowAnyOrigin();
 
 });
+app.UseIpRateLimiting();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

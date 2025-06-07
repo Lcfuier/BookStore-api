@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BookStore.Application.Interface;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using System;
@@ -11,7 +12,7 @@ namespace BookStore.Application.AutoMapper
 {
     public class MappingProfile : Profile
     {
-        public MappingProfile()
+        public MappingProfile(IEncryptionService encryptionService)
         {
 
             CreateMap<Book, AddBookReq>();
@@ -38,9 +39,26 @@ namespace BookStore.Application.AutoMapper
 
             CreateMap<GetOrderByUserNameRes, Order>();
             CreateMap<Order, GetOrderByUserNameRes>()
-                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
-
-            CreateMap<Order, GetOrderByIdRes>();
+                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails))
+                 .AfterMap((src, dest) =>
+                  {
+                      dest.FullName = encryptionService.Decrypt(src.FullName);
+                      dest.PhoneNumber = encryptionService.Decrypt(src.PhoneNumber);
+                      dest.Address = encryptionService.Decrypt(src.Address);
+                      dest.Ward = encryptionService.Decrypt(src.Ward);
+                      dest.District = encryptionService.Decrypt(src.District);
+                      dest.City = encryptionService.Decrypt(src.City);
+                  });
+            CreateMap<Order, GetOrderByIdRes>()
+                .AfterMap((src, dest) =>
+                {
+                    dest.FullName = encryptionService.Decrypt(src.FullName);
+                    dest.PhoneNumber = encryptionService.Decrypt(src.PhoneNumber);
+                    dest.Address = encryptionService.Decrypt(src.Address);
+                    dest.Ward = encryptionService.Decrypt(src.Ward);
+                    dest.District = encryptionService.Decrypt(src.District);
+                    dest.City = encryptionService.Decrypt(src.City);
+                });
 
             CreateMap<ApplicationUser, GetAllUserRes>();
         }

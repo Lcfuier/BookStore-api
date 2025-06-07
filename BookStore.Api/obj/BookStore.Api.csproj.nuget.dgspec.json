@@ -52,6 +52,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AspNetCoreRateLimit": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
             "AutoMapper": {
               "target": "Package",
               "version": "[14.0.0, )"

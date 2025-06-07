@@ -30,12 +30,14 @@ namespace BookStore.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        public UserService(IUnitOfWork data, UserManager<ApplicationUser> userManager, IConfiguration configuration, IMapper mapper)
+        private readonly IEncryptionService _encryptionService;
+        public UserService(IUnitOfWork data, UserManager<ApplicationUser> userManager, IConfiguration configuration, IMapper mapper, IEncryptionService encryptionService)
         {
             _data = data;
             _userManager = userManager;
             _configuration = configuration;
-            _mapper=mapper;
+            _mapper = mapper;
+            _encryptionService = encryptionService;
         }
         public async Task<Result<ApplicationUser>> Register(RegisterReq register)
         {

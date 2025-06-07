@@ -278,15 +278,13 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Carrier")
                         .HasColumnType("text");
 
                     b.Property<string>("City")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                        .HasColumnType("text");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
@@ -295,8 +293,7 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("District")
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                        .HasColumnType("text");
 
                     b.Property<string>("FullName")
                         .HasColumnType("text");
@@ -326,8 +323,7 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PhoneNumber")
-                        .HasMaxLength(11)
-                        .HasColumnType("character varying(11)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ShippingCost")
                         .HasColumnType("text");
@@ -350,8 +346,7 @@ namespace BookStore.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Ward")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.HasKey("OrderId");
 
