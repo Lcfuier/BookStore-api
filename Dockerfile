@@ -10,11 +10,12 @@ COPY ["BookStore.Api/BookStore.Api.csproj", "BookStore.Api/"]
 COPY ["BookStore.Application/BookStore.Application.csproj", "BookStore.Application/"]
 COPY ["BookStore.Domain/BookStore.Domain.csproj", "BookStore.Domain/"]
 COPY ["BookStore.Infrastructure/BookStore.Infrastructure.csproj", "BookStore.Infrastructure/"]
+COPY ["BookStore.UnitTest/BookStore.UnitTest.csproj", "BookStore.UnitTest/"]  
 
 # Restore dependencies
 RUN dotnet restore "BookStore.BLL.sln"
 
-# Copy rest of the code
+# Copy rest of the code (bao gồm tất cả thư mục dự án)
 COPY . .
 
 # Build
