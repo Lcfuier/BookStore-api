@@ -138,7 +138,7 @@ namespace BookStore.Application.Services
             order.OrderId = new Guid();
             order.OrderStatus = OrderStatus.StatusPending;
             order.District = _encryptionService.Encrypt(req.District);
-            order.City = _encryptionService.Encrypt(req.Address);
+            order.City = _encryptionService.Encrypt(req.City);
             order.CreatedBy=user.UserName;
             order.CreatedTime= DateTime.UtcNow;
             order.PhoneNumber= _encryptionService.Encrypt(req.PhoneNumber);
