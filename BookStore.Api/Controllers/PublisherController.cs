@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         [HttpPost]
         public async Task<IActionResult> AddPublisher([FromBody] AddPublisherReq param)
         {
@@ -47,9 +48,9 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateAuthor([FromBody] UpdatePublisherReq param)
+        public async Task<IActionResult> UpdatePublisher([FromBody] UpdatePublisherReq param)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();
@@ -60,9 +61,9 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteAuthor(Guid id)
+        public async Task<IActionResult> DeletePublisher(Guid id)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
             string userName = claimsIdentity.Name.ToString();

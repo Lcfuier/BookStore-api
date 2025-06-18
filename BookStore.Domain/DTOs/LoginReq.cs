@@ -15,5 +15,7 @@ namespace BookStore.Domain.DTOs
         [Required]
         [PasswordPropertyText]
         public string Password { get; set; }
+        [StringLength(6)]
+        public string? Passcode { get; set; }
     }
 }

@@ -30,3 +30,5 @@ D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\obj\Debug\net8.0\B
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\obj\Debug\net8.0\refint\BookStore.Infrastructure.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\obj\Debug\net8.0\BookStore.Infrastructure.pdb
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\obj\Debug\net8.0\ref\BookStore.Infrastructure.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\bin\Debug\net8.0\BookStore.Application.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.Infrastructure\bin\Debug\net8.0\BookStore.Application.pdb

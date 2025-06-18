@@ -1,7 +1,7 @@
 ﻿using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Infrastructure.Data;
-using BookStore.Infrastructure.Interfaces;
+using BookStore.Application.InterfacesRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -54,6 +54,19 @@ namespace BookStore.Infrastructure.Repositorys
                     TotalBooksSold = g.Sum(x => x.Quantity)
                 })
                 .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            return data;
+
+        }
+        public async Task<List<Order>> ExportOrdersAsync(DateFilter filter)
+        {
+            DateTime from = filter.FromDate?.ToUniversalTime() ?? DateTime.MinValue;
+            DateTime to = filter.ToDate?.ToUniversalTime() ?? DateTime.UtcNow;
+
+            var data = await _dbContext.Order
+                .Where(o => o.CreatedTime >= from && o.CreatedTime <= to)
+                .OrderBy(o => o.CreatedTime)
                 .ToListAsync();
 
             return data;

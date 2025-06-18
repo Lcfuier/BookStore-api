@@ -30,7 +30,9 @@ namespace BookStore.Api.Controllers
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers(int page, int size, string? term)
         {
-            var result = await _userService.GetAllUsersAsync(page, size, term);
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _userService.GetAllUsersAsync(page, size, term,userName);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -40,7 +42,9 @@ namespace BookStore.Api.Controllers
         [HttpPut("users/{id}")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserReq req,string id)
         {
-            var result = await _userService.UpdateUser(id,req);
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _userService.UpdateUser(id,req,userName);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -50,7 +54,9 @@ namespace BookStore.Api.Controllers
         [HttpGet("users/{id}")]
         public async Task<IActionResult> GetUserInformation(string id)
         {
-            var result = await _userService.GetUserInformationAsync(id);
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            var result = await _userService.GetUserInformationAsync(id,userName);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -61,17 +67,21 @@ namespace BookStore.Api.Controllers
         [Authorize(Roles = Roles.Admin+","+Roles.Librarian)]
         public async Task<IActionResult> GetBooksSoldByDate([FromBody] DateFilter filter)
         {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
             if (filter == null)
             {
                 return BadRequest();
             }
-            var result= await _orderService.GetBooksSoldByDate(filter);
+            var result= await _orderService.GetBooksSoldByDate(filter,userName);
             return Ok(result);
         }
         [HttpPost("revenue-by-date")]
         [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         public async Task<IActionResult> GetRevenueByDate([FromBody] DateFilter filter)
         {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
             if (filter == null)
             {
                 return BadRequest(new Result<string>
@@ -80,8 +90,29 @@ namespace BookStore.Api.Controllers
                     Message = "Hãy chọn ngày bắt đầu và kết thúc!"
                 });
             }
-            var result = await _orderService.GetRevenueByDate(filter);
+            var result = await _orderService.GetRevenueByDate(filter,userName);
             return Ok(result);
+        }
+        [HttpPost("ExportOrders")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
+        public async Task<IActionResult> ExportOrders([FromBody] DateFilter filter)
+        {
+            ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;
+            string userName = claimsIdentity.Name.ToString();
+            if (filter == null)
+            {
+                return BadRequest(new Result<string>
+                {
+                    Success = false,
+                    Message = "Hãy chọn ngày bắt đầu và kết thúc!"
+                });
+            }
+            var result = await _orderService.ExportOrdersAsync(filter, userName);
+            if(result is null)
+            {
+                return BadRequest("Lỗi khi xuất file");
+            }
+            return result;
         }
     }
 }

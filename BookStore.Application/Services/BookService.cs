@@ -5,7 +5,6 @@ using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
-using BookStore.Infrastructure.Interface;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3.Data;
 using Google.Apis.Drive.v3;
@@ -27,6 +26,7 @@ using System.Management;
 using Google.Apis.Upload;
 using Google;
 using Microsoft.AspNetCore.Hosting;
+using BookStore.Application.InterfacesRepository;
 
 namespace BookStore.Application.Services
 {

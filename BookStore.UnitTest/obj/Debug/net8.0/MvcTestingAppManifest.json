@@ -1,0 +1,6 @@
+{
+  "BookStore.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Api",
+  "BookStore.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application",
+  "BookStore.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain",
+  "BookStore.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure"
+}

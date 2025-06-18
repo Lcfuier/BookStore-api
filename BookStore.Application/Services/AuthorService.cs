@@ -1,10 +1,10 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
-using BookStore.Infrastructure.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

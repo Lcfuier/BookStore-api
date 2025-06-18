@@ -1,5 +1,4 @@
 ﻿using BookStore.Domain.Models;
-using BookStore.Infrastructure.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -22,6 +21,7 @@ using Google.Apis.Drive.v3.Data;
 using Microsoft.Extensions.Options;
 using AutoMapper;
 using System.Text.RegularExpressions;
+using BookStore.Application.InterfacesRepository;
 namespace BookStore.Application.Services
 {
     public class UserService : IUserService
@@ -102,109 +102,107 @@ namespace BookStore.Application.Services
         }
         public async Task<Result<LoginRes>> Login(LoginReq login)
         {
-            Result<LoginRes> result = new Result<LoginRes>();
+            var result = new Result<LoginRes>();
+
             if (string.IsNullOrWhiteSpace(login.Password) || IsUsernameValid(login.Password))
             {
                 result.Success = false;
-                result.Message = "Tên đăng nhập hoặc mật khẩu không lệ!";
-                result.Data = null;
+                result.Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ!";
                 return result;
             }
+
             login.UserName = login.UserName.Trim();
             login.Password = login.Password.Trim();
-            if (string.IsNullOrEmpty(login.Password) || string.IsNullOrEmpty(login.UserName))
+
+            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrEmpty(login.Password))
             {
                 result.Success = false;
-                result.Message = "Hãy nhập đủ tên người dùng và mật khẩu";
-                result.Data = null;
+                result.Message = "Hãy nhập đầy đủ tên người dùng và mật khẩu.";
                 return result;
             }
+
             var user = await _userManager.FindByNameAsync(login.UserName);
-            if (user is null)
+            if (user == null)
             {
                 result.Success = false;
                 result.Message = "Người dùng không tồn tại!";
-                result.Data = null;
                 return result;
             }
-            if (user.LockoutEnd!=null && user.LockoutEnd > DateTimeOffset.UtcNow)
+
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
             {
                 var remaining = user.LockoutEnd.Value - DateTimeOffset.UtcNow;
                 result.Success = false;
-                result.Message = $"Tài khoản đã bị khóa. Hết hạn sau {remaining.TotalMinutes:N0} phút.";
-                result.Data = null;
+                result.Message = $"Tài khoản bị khóa. Hết hạn sau {remaining.TotalMinutes:N0} phút.";
                 return result;
             }
-            else if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
-            {
-                if (!user.EmailConfirmed)
-                {
-                    result.Success = false;
-                    result.Message = "Email chưa được xác minh!";
-                    result.Data = null;
-                    return result;
-                }
-                else
-                {
-                    if (user.TwoFactorGoogleEnabled == true)
-                    {
-                        /*TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
-                        string UserUniqueKey = user.TwoFactorGoogleCode;
-                        bool isValid = tfa.ValidateTwoFactorPIN(UserUniqueKey, login.passcode) ;
-                        if (!isValid)
-                        {
-                            result.Success = false;
-                            result.Message = "Token is invalid";
-                            result.Data = null;
-                            return result;  
-                        }*/
-                        result.Data = null;
-                        result.Message = "Nhập mã xác thực 2 bước của bạn!";
-                        result.Success = true;
-                        return result;
-                    }
-                    else
-                    {
-                        var authClaim = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name,user.NormalizedUserName),
-                        new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    };
-                        var userRoles = await _userManager.GetRolesAsync(user);
-                        if (!userRoles.Any())
-                        {
-                            // Debug log hoặc breakpoint
-                            Console.WriteLine("User has no roles assigned.");
-                        }
-                        foreach (var role in userRoles)
-                        {
-                            authClaim.Add(new Claim(ClaimTypes.Role, role));
-                        }
-                        var jwtToken = GetToken(authClaim);
 
-                        result.Data = new LoginRes()
-                        {
-                            AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                            RefreshToken = GenerateRefreshToken(),
-                        };
-                        result.Message = "Đăng nhập thành công!";
-                        user.RefreshToken = result.Data.RefreshToken;
-                        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
-                        await _userManager.UpdateAsync(user);
-                    }
-
-                    result.Success = true;
-                }
-
-            }
-            else
+            if (!await _userManager.CheckPasswordAsync(user, login.Password))
             {
                 result.Success = false;
                 result.Message = "Mật khẩu không chính xác!";
-                result.Data = null;
+                return result;
             }
+
+            if (!user.EmailConfirmed)
+            {
+                result.Success = false;
+                result.Message = "Email chưa được xác minh!";
+                return result;
+            }
+
+            if (user.TwoFactorGoogleEnabled == true && login.Passcode==null)
+            {
+                result.Success = true;
+                result.Message = "Yêu cầu mã xác thực 2 bước.";
+                result.Data = null;
+                // FE sẽ hiểu để hiện form nhập OTP
+                return result;
+            }
+
+            if(user.TwoFactorGoogleEnabled == true && login.Passcode != null)
+            {
+                TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
+                string UserUniqueKey = user.TwoFactorGoogleCode;
+                bool isValid = tfa.ValidateTwoFactorPIN(UserUniqueKey, login.Passcode) ;
+                if (!isValid)
+                {
+                    result.Success = false;
+                    result.Message = "Mã xác thực không hợp lệ!";
+                    result.Data = null;
+                    return result;
+                }
+            }
+            // Nếu không bật 2FA → cấp token ngay
+            var authClaims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.NormalizedUserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            foreach (var role in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var jwtToken = GetToken(authClaims);
+
+            result.Data = new LoginRes
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                RefreshToken = GenerateRefreshToken()
+            };
+            result.Success = true;
+            result.Message = "Đăng nhập thành công!";
+
+            user.RefreshToken = result.Data.RefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+            await _userManager.UpdateAsync(user);
+
             return result;
         }
+
         public async Task<Result<ApplicationUser>> ConfirmMail(string token, string userName)
         {
             Result<ApplicationUser> result = new Result<ApplicationUser>();
@@ -485,31 +483,61 @@ namespace BookStore.Application.Services
             // Step 4: Return the QR code and manual key as a response
             return result;
         }
-        public async Task<Result<LoginRes>> Verify2FA(string userName, TwoFAReq passcode)
+        public async Task<Result<LoginRes>> Verify2FA(LoginReq login)
         {
             Result<LoginRes> result = new Result<LoginRes>();
-            if (string.IsNullOrEmpty(userName))
+
+            if (string.IsNullOrWhiteSpace(login.Password) || IsUsernameValid(login.Password))
             {
                 result.Success = false;
-                result.Message = "Tên người dùng không hợp lệ!";
-                result.Data = null;
+                result.Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ!";
                 return result;
             }
 
-            var user = new ApplicationUser();
-            user = await _userManager.FindByNameAsync(userName);
-            if (user is null)
+            login.UserName = login.UserName.Trim();
+            login.Password = login.Password.Trim();
+
+            if (string.IsNullOrEmpty(login.UserName) || string.IsNullOrEmpty(login.Password))
+            {
+                result.Success = false;
+                result.Message = "Hãy nhập đầy đủ tên người dùng và mật khẩu.";
+                return result;
+            }
+
+            var user = await _userManager.FindByNameAsync(login.UserName);
+            if (user == null)
             {
                 result.Success = false;
                 result.Message = "Người dùng không tồn tại!";
-                result.Data = null;
+                return result;
             }
 
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+            {
+                var remaining = user.LockoutEnd.Value - DateTimeOffset.UtcNow;
+                result.Success = false;
+                result.Message = $"Tài khoản bị khóa. Hết hạn sau {remaining.TotalMinutes:N0} phút.";
+                return result;
+            }
+
+            if (!await _userManager.CheckPasswordAsync(user, login.Password))
+            {
+                result.Success = false;
+                result.Message = "Mật khẩu không chính xác!";
+                return result;
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                result.Success = false;
+                result.Message = "Email chưa được xác minh!";
+                return result;
+            }
             if (user.TwoFactorGoogleEnabled == true)
             {
                 TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
                 string UserUniqueKey = user.TwoFactorGoogleCode;
-                bool isValid = tfa.ValidateTwoFactorPIN(UserUniqueKey, passcode.Passcode);
+                bool isValid = tfa.ValidateTwoFactorPIN(UserUniqueKey, login.Passcode);
                 if (!isValid)
                 {
                     result.Success = false;
@@ -811,8 +839,28 @@ namespace BookStore.Application.Services
             }
             return result;
         }
-        public async Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term)
+        public async Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term,string userName)
         {
+            var userAdmin = await _userManager.FindByNameAsync(userName);
+            if (userAdmin == null)
+            {
+                return new Result<PaginationResponse<GetAllUserRes>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var rolesExist = await _userManager.GetRolesAsync(userAdmin);
+            if (rolesExist.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower())
+            {
+                return new Result<PaginationResponse<GetAllUserRes>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             IEnumerable<ApplicationUser> data;
             QueryOptions<ApplicationUser> options = new QueryOptions<ApplicationUser>
             {
@@ -855,8 +903,28 @@ namespace BookStore.Application.Services
                 Success = true
             };
         }
-        public async Task<Result<string>> UpdateUser(string id,UpdateUserReq req)
+        public async Task<Result<string>> UpdateUser(string id,UpdateUserReq req,string userName)
         {
+            var userAdmin = await _userManager.FindByNameAsync(userName);
+            if (userAdmin == null)
+            {
+                return new Result<string>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var rolesExist = await _userManager.GetRolesAsync(userAdmin);
+            if (rolesExist.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower())
+            {
+                return new Result<string>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             Result<string> result = new Result<string>();
             if (string.IsNullOrEmpty(id))
             {
@@ -922,8 +990,29 @@ namespace BookStore.Application.Services
             }
             
         }
-        public async Task<Result<GetAllUserRes>> GetUserInformationAsync(string id)
+        public async Task<Result<GetAllUserRes>> GetUserInformationAsync(string id,string userName)
         {
+          
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return new Result<GetAllUserRes>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Người dùng không tồn tại !"
+                };
+            }
+            var rolesExist = await _userManager.GetRolesAsync(user);
+            if (rolesExist.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() )
+            {
+                return new Result<GetAllUserRes>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = "Không thể truy cập!"
+                };
+            }
             ApplicationUser data;
             QueryOptions<ApplicationUser> options = new QueryOptions<ApplicationUser>
             {

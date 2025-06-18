@@ -22,7 +22,7 @@ namespace BookStore.Application.Interface
         Task<Result<ApplicationUser>> ResetPassword(ResetPasswordReq param);
         Task<Result<TwoFactorAuthenticationRes>> GetTwoFactorAuthenticationCode(string userName);
         Task<Result<TwoFactorAuthenticationRes>> TwoFactorAuthentication(string userName, EnableTwoFaReq passcode);
-        Task<Result<LoginRes>> Verify2FA(string userName, TwoFAReq passcode);
+        Task<Result<LoginRes>> Verify2FA(LoginReq login);
         Task<Result<string>> VerifyOtp(string userName, string Otp);
         Task<Result<GetInformationRes>> GetInformation(string userName);
         Task<Result<ApplicationUser>> ChangeEmail(string userName);
@@ -30,9 +30,9 @@ namespace BookStore.Application.Interface
         Task<Result<TwoFactorAuthenticationRes>> Disable2FA(string userName, EnableTwoFaReq passcode);
         Task<Result<LoginRes>> RefreshToken(string userName, RefreshTokenReq req);
         Task<Result<ApplicationUser>> ChangeEmail(ChangeEmailReq param, string userName);
-        Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term);
-        Task<Result<string>> UpdateUser(string id, UpdateUserReq req);
-        Task<Result<GetAllUserRes>> GetUserInformationAsync(string id);
+        Task<Result<PaginationResponse<GetAllUserRes>>> GetAllUsersAsync(int page, int size, string? term,string userName);
+        Task<Result<string>> UpdateUser(string id, UpdateUserReq req,string userName);
+        Task<Result<GetAllUserRes>> GetUserInformationAsync(string id,string userName);
 
     }
 }

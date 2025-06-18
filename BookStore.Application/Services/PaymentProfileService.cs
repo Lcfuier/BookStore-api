@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
-using BookStore.Infrastructure.Interface;
+
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

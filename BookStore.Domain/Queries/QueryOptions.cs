@@ -13,11 +13,9 @@ namespace BookStore.Domain.Queries
             public int PageNumber { get; set; }
             public int PageSize { get; set; }
 
-            // private field, public properties for Include strings.
             private string[] includes = Array.Empty<string>();
 
-            // write-only property for Include strings.
-            // Includes = "Book, Author";
+
             public string Includes
             {
                 set => includes = value.Replace(" ", "").Split(",");

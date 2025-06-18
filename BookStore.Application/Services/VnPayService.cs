@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Domain.Constants.VnPay;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
-using BookStore.Infrastructure.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;

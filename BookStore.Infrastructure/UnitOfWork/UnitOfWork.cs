@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Infrastructure.Data;
-using BookStore.Infrastructure.Interface;
-using BookStore.Infrastructure.Interfaces;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Infrastructure.Repositorys;
 using System;
 using System.Collections.Generic;

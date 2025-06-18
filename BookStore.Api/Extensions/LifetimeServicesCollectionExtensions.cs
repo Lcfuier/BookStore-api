@@ -1,6 +1,6 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Application.Services;
-using BookStore.Infrastructure.Interface;
 using BookStore.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;

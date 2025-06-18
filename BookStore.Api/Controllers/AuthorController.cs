@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin+","+Roles.Librarian)]
         [HttpPost]
         public async Task<IActionResult> AddAuthor([FromBody] AddAuthorReq param)
         {
@@ -47,7 +48,7 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateAuthor([FromBody] UpdateAuthorReq param)
         {
@@ -60,7 +61,7 @@ namespace BookStore.Api.Controllers
             }
             return Ok(result);
         }
-        [Authorize]
+        [Authorize(Roles = Roles.Admin + "," + Roles.Librarian)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteAuthor(Guid id)
         {

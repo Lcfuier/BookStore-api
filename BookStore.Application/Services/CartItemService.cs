@@ -1,6 +1,6 @@
 ﻿using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Domain.Models;
-using BookStore.Infrastructure.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;

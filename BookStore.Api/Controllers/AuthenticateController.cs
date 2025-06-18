@@ -119,10 +119,9 @@ namespace BookStore.Api.Controllers
             return Ok(result);
         }
         [HttpPost("Verify-2FA")]
-        public async Task<IActionResult> Verify2FA([FromBody] TwoFAReq passcode)
+        public async Task<IActionResult> Verify2FA([FromBody] LoginReq login)
         {
-            var userName = passcode.UserName;
-            var result = await _userService.Verify2FA(userName, passcode);
+            var result = await _userService.Verify2FA(login);
             if (!result.Success)
             {
                 return BadRequest(result);

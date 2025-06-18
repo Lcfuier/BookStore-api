@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using BookStore.Application.Interface;
+using BookStore.Application.InterfacesRepository;
 using BookStore.Domain.Constants;
 using BookStore.Domain.Constants.VnPay;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Queries;
 using BookStore.Domain.Result;
-using BookStore.Infrastructure.Interface;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -385,13 +386,105 @@ namespace BookStore.Application.Services
             result.Success = true;
             return result;
         }
-        public async Task<List<RevenuePointRes>> GetRevenueByDate(DateFilter filter)
+        public async Task<List<RevenuePointRes>> GetRevenueByDate(DateFilter filter,string userName)
         {
-           return await _data.Order.GetRevenueByDate(filter);
+            List<RevenuePointRes> result= new List<RevenuePointRes> ();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return result;
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return result;
+            }
+            return await _data.Order.GetRevenueByDate(filter);
         }
-        public async Task<List<BookSoldStatRes>> GetBooksSoldByDate(DateFilter filter)
+        public async Task<List<BookSoldStatRes>> GetBooksSoldByDate(DateFilter filter, string userName)
         {
+            List <BookSoldStatRes> result = new List<BookSoldStatRes>();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return result;
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return result;
+            }
             return await _data.Order.GetBooksSoldByDate(filter);
+        }
+        public async Task<FileContentResult> ExportOrdersAsync(DateFilter filter, string userName)
+        {
+            List<BookSoldStatRes> result = new List<BookSoldStatRes>();
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return null;
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.FirstOrDefault()?.ToLower() != Roles.Admin.ToLower() && roles.FirstOrDefault()?.ToLower() != Roles.Librarian.ToLower())
+            {
+                return null;
+            }
+            var data=await _data.Order.ExportOrdersAsync(filter);
+            var orders = _mapper.Map<List<GetOrderByUserNameRes>>(data);
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Orders");
+
+            // Header
+            worksheet.Cell(1, 1).Value = "STT";
+            worksheet.Cell(1, 2).Value = "Mã đơn";
+            worksheet.Cell(1, 3).Value = "Khách hàng";
+            worksheet.Cell(1, 4).Value = "SĐT";
+            worksheet.Cell(1, 5).Value = "Địa chỉ";
+            worksheet.Cell(1, 6).Value = "Ngày đặt";
+            worksheet.Cell(1, 7).Value = "Trạng thái";
+            worksheet.Cell(1, 8).Value = "Thanh toán";
+            worksheet.Cell(1, 9).Value = "Mã giao dịch";
+            worksheet.Cell(1, 10).Value = "Tổng tiền";
+
+            // Ghi dữ liệu
+            for (int i = 0; i < orders.Count; i++)
+            {
+                var o = orders[i];
+                var row = i + 2;
+
+                worksheet.Cell(row, 1).Value = i + 1;
+                worksheet.Cell(row, 2).Value = o.OrderCode;
+                worksheet.Cell(row, 3).Value = o.FullName;
+                worksheet.Cell(row, 4).Value = o.PhoneNumber;
+                worksheet.Cell(row, 5).Value = o.City+", "+o.District+", "+o.Ward+", "+o.Address;
+                worksheet.Cell(row, 6).Value = o.CreatedTime?.ToString("dd/MM/yyyy HH:mm");
+                worksheet.Cell(row, 7).Value = o.OrderStatus;
+                worksheet.Cell(row, 8).Value = o.PaymentMethod;
+                worksheet.Cell(row, 9).Value = o.TransactionId;
+                worksheet.Cell(row, 10).Value = o.Total;
+            }
+
+            // Tổng doanh thu ở dòng cuối
+            int totalRow = orders.Count + 2;
+            worksheet.Cell(totalRow, 9).Value = "Tổng doanh thu:";
+            worksheet.Cell(totalRow, 10).FormulaA1 = $"=SUM(J2:J{orders.Count + 1})";
+            worksheet.Cell(totalRow, 9).Style.Font.Bold = true;
+            worksheet.Cell(totalRow, 10).Style.Font.Bold = true;
+
+            // Format cột số tiền
+            worksheet.Column(10).Style.NumberFormat.Format = "#,##0 đ";
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"DonHang_{filter.FromDate}-{filter.ToDate}.xlsx";
+            return new FileContentResult(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            {
+                FileDownloadName = fileName
+            };
         }
         private static string GenerateOrderCode()
         {

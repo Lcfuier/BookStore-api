@@ -154,9 +154,6 @@
             "projectReferences": {
               "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\BookStore.Domain.csproj": {
                 "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\BookStore.Domain.csproj"
-              },
-              "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj": {
-                "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Infrastructure\\BookStore.Infrastructure.csproj"
               }
             }
           }
@@ -179,6 +176,10 @@
             "AutoMapper": {
               "target": "Package",
               "version": "[14.0.0, )"
+            },
+            "ClosedXML": {
+              "target": "Package",
+              "version": "[0.105.0, )"
             },
             "FirebaseStorage.net": {
               "target": "Package",
@@ -335,6 +336,9 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
+              "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj": {
+                "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Application\\BookStore.Application.csproj"
+              },
               "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\BookStore.Domain.csproj": {
                 "projectPath": "D:\\Workspace\\BookStore\\BookStore.BLL\\BookStore.Domain\\BookStore.Domain.csproj"
               }

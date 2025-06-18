@@ -20,9 +20,7 @@ D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\Book
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Application.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Application.pdb
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Domain.dll
-D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Infrastructure.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Domain.pdb
-D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\bin\Debug\net8.0\BookStore.Infrastructure.pdb
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\obj\Debug\net8.0\BookStore.Application.csproj.AssemblyReference.cache
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\obj\Debug\net8.0\BookStore.Application.GeneratedMSBuildEditorConfig.editorconfig
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Application\obj\Debug\net8.0\BookStore.Application.AssemblyInfoInputs.cache

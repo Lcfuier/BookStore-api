@@ -1,6 +1,6 @@
 ﻿using BookStore.Domain.Queries;
 using BookStore.Infrastructure.Data;
-using BookStore.Infrastructure.Interface;
+using BookStore.Application.InterfacesRepository;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
