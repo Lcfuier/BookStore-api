@@ -1,4 +1,6 @@
 ﻿using BookStore.Application.Interface;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace BookStore.Api.Extensions
 {
@@ -6,14 +8,22 @@ namespace BookStore.Api.Extensions
     {
         private readonly IWebHostEnvironment _env;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly Cloudinary _cloudinary;
 
-        public ImageService(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public ImageService(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IConfiguration config)
         {
             _env = env;
             _httpContextAccessor = httpContextAccessor;
+            var account = new Account(
+           config["CloudinarySettings:CloudName"],
+           config["CloudinarySettings:ApiKey"],
+           config["CloudinarySettings:ApiSecret"]
+            );
+
+            _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<string> SaveImageAsync(IFormFile file)
+        /*public async Task<string> SaveImageAsync(IFormFile file)
         {
             if (_env.WebRootPath == null)
                 throw new Exception("WebRootPath is null!");
@@ -41,6 +51,31 @@ namespace BookStore.Api.Extensions
                 File.Delete(filePath);
 
             await Task.CompletedTask;
+        }*/
+        public async Task<string> SaveImageAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return null;
+
+            await using var stream = file.OpenReadStream();
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = "bookstore" // tạo folder bookstore trong Cloudinary
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            return uploadResult.SecureUrl?.ToString();
+        }
+
+        public async Task DeleteImageAsync(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl)) return;
+
+            var uri = new Uri(imageUrl);
+            var publicId = $"bookstore/{Path.GetFileNameWithoutExtension(uri.LocalPath)}";
+
+            var deletionParams = new DeletionParams(publicId);
+            await _cloudinary.DestroyAsync(deletionParams);
         }
     }
 }

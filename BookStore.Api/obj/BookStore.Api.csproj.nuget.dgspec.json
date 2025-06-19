@@ -60,6 +60,10 @@
               "target": "Package",
               "version": "[14.0.0, )"
             },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.6, )"
+            },
             "Google.Apis.Auth": {
               "target": "Package",
               "version": "[1.69.0, )"
@@ -180,6 +184,10 @@
             "ClosedXML": {
               "target": "Package",
               "version": "[0.105.0, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.6, )"
             },
             "FirebaseStorage.net": {
               "target": "Package",

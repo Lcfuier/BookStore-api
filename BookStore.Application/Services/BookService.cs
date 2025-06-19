@@ -236,7 +236,7 @@ namespace BookStore.Application.Services
             await _data.SaveAsync();
             result.Success = true;
             result.Message = "Thêm sách thành công";
-            result.Data = book;
+            result.Data = book; 
             return result;
         }
         public async Task<Result<Book>> UpdateBookAsync(UpdateBookReq bookDto, IFormFile? newImage, string userName,Guid Id)

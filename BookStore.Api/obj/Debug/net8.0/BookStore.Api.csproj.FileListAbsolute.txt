@@ -601,3 +601,4 @@ D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\ExcelNumberF
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\RBush.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\SixLabors.Fonts.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\System.IO.Packaging.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.Api\bin\Debug\net8.0\CloudinaryDotNet.dll
