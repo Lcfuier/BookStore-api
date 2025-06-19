@@ -29,7 +29,7 @@ namespace BookStore.Api.Controllers
         [HttpPost("checkout")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Authorize]
+        [Authorize(Roles = Roles.User)]
         public async Task<IActionResult> Checkout([FromBody] OrderReq req)
         {
             ClaimsIdentity? claimsIdentity = User.Identity as ClaimsIdentity;

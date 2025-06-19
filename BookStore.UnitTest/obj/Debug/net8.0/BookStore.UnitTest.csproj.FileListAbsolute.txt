@@ -482,3 +482,12 @@ D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\Microso
 D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\System.Diagnostics.EventLog.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll
 D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\obj\Debug\net8.0\MvcTestingAppManifest.json
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\ClosedXML.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\ClosedXML.Parser.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\CloudinaryDotNet.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\ExcelNumberFormat.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\RBush.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\SixLabors.Fonts.dll
+D:\Workspace\BookStore\BookStore.BLL\BookStore.UnitTest\bin\Debug\net8.0\System.IO.Packaging.dll

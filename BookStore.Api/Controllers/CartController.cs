@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Interface;
 using BookStore.Application.Services;
+using BookStore.Domain.Constants;
 using BookStore.Domain.DTOs;
 using BookStore.Domain.Models;
 using BookStore.Domain.Result;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 namespace BookStore.Api.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = Roles.User)]
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
