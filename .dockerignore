@@ -1,6 +1,30 @@
-﻿**/bin/
+﻿# Ignore build output
+**/bin/
 **/obj/
+
+# Ignore user-specific files
 .vs/
+.idea/
+*.user
+*.suo
+
+# Ignore Git
 .git/
+.gitignore
+
+# Ignore config/secrets
 .env
+*.secrets.json
 appsettings.Development.json
+appsettings.Local.json
+
+# Ignore uploads/images/videos in wwwroot
+wwwroot/uploads/
+wwwroot/images/
+wwwroot/*.xlsx
+*.xlsx
+*.csv
+
+# Ignore node_modules if Angular or JS exists
+node_modules/
+dist/
