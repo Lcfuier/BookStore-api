@@ -67,7 +67,17 @@ public class Program
             options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
         });
-
+       /* builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowMyFrontend",
+                builder =>
+                {
+                    builder.WithOrigins("https://myshop.com")
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials(); 
+                });
+        });*/
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
         {
@@ -88,7 +98,17 @@ public class Program
         builder.Services.AddInMemoryRateLimiting();
         builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         builder.Services.AddLifetimeServices(builder.Configuration);
-
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowConfiguredOrigins", policy =>
+            {
+                policy.WithOrigins(allowedOrigins!)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+                      //.AllowCredentials(); // nếu frontend dùng cookie hoặc xác thực
+            });
+        });
         var app = builder.Build();
 
         using (var scope = app.Services.CreateScope())
@@ -104,12 +124,13 @@ public class Program
 
         app.UseStaticFiles();
         app.UseSession();
-        app.UseCors(options =>
-        {
-            options.AllowAnyHeader();
-            options.AllowAnyMethod();
-            options.AllowAnyOrigin();
-        });
+        /* app.UseCors(options =>
+         {
+             options.AllowAnyHeader();
+             options.AllowAnyMethod();
+             options.AllowAnyOrigin();
+         });*/
+        app.UseCors("AllowConfiguredOrigins");
 
         if (app.Environment.IsDevelopment())
         {
@@ -130,6 +151,6 @@ public class Program
 
         app.MapControllers();
 
-        await app.RunAsync(); // <- dùng async để khớp với Main
+        await app.RunAsync(); 
     }
 }
